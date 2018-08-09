@@ -1,7 +1,6 @@
 #include "LispParser.h"
 #include "fstream"
 #include <iostream>
-#include "FunctionRegister.h"
 #include "AST.h"
 
 
@@ -111,10 +110,10 @@ string ParseArguments::GetValue()
 {
 	const string& line = _file_lines[_line_number];
 
-	unsigned int value_size = 0;
-	while ((_max_column_number > _column_number + value_size))
+	const auto begin_position = _column_number;
+	while ((_max_column_number > _column_number))
 	{
-		const char& temp_item = line[_column_number + value_size++];
+		const char& temp_item = line[_column_number];
 
 		if ((temp_item == ' ')
 			|| (temp_item == ')')
@@ -122,9 +121,11 @@ string ParseArguments::GetValue()
 		{
 			break;
 		}
+
+		_column_number++;
 	}
 
-	return line.substr(_column_number, value_size);
+	return line.substr(begin_position, _column_number-begin_position);
 }
 
 void ParseArguments::Clear()
@@ -143,7 +144,6 @@ string ParseArguments::GetErrorString()
 
 
 LispParser::LispParser()
-	:_ast_root(nullptr)
 {
 }
 
@@ -200,6 +200,11 @@ bool LispParser::Lexer()
 	while (!_argument.IsEnd())
 	{
 		const char& token_char = _argument.GetNextChar();
+		if (token_char == 0)
+		{
+			break;
+		}
+
 		const EToken token = _CheckToken(token_char);
 
 		switch (token)
@@ -213,9 +218,14 @@ bool LispParser::Lexer()
 		case BOOLEN:
 		case NUMBER:
 		case STRING:
+		case SYMBOL:
 			{
 			_argument.UnDoGetNextChar();
 			_token_stream.Push(new Token(token, _argument.GetValue()));
+			break;
+			}
+		case SPACE:
+			{
 			break;
 			}
 		default:
@@ -253,8 +263,11 @@ EToken LispParser::_CheckToken(const char& value)
 	{
 		return NUMBER;
 	}
-	if (((value >= 'a' && value <= 'z') || (value >= 'A' && value <= 'Z'))
-		|| (FunctionRegister::GetInstance()->IsFunctor(string(value, 1))))
+	if (value == ' ')
+	{
+		return SPACE;
+	}
+	else if (value != 0)
 	{
 		return SYMBOL;
 	}
@@ -269,7 +282,10 @@ void LispParser::_PrintLexerError()
 
 bool LispParser::Parser()
 {
-	_ast_root = _CreatNode();
+	while (!_token_stream.IsEmpty())
+	{
+		_ast_vector.push_back(_CreatNode());
+	}
 
 	return true;
 }
@@ -283,7 +299,8 @@ ASTNode* LispParser::_CreatNode()
 	}
 	else if ((token->token == BOOLEN)
 		|| (token->token == NUMBER)
-		|| (token->token == STRING))
+		|| (token->token == STRING)
+		|| (token->token == SYMBOL))
 	{
 		_token_stream.UndoPop();
 		return _CreatSymbol();
@@ -294,30 +311,17 @@ ASTNode* LispParser::_CreatNode()
 
 ASTNode* LispParser::_CreatSExpression()
 {
-	ScriptFunction function = nullptr;
+	auto node = new ASTListNode;
 
-	const Token* token = _token_stream.Pop();
-	if (token->token == FUNCTION)
-	{
-		const string& function_name = token->value;
-		function = FunctionRegister::GetInstance()->GetFunction(function_name);
-	}
-
-	if (function == nullptr)
-	{
-		_PrintParseError();
-		return nullptr;
-	}
-
-	ASTNodeVector arguments;
-
-	token = _token_stream.Pop();
+	const auto* token = _token_stream.Pop();
 	while (token->token != RPAREN)
 	{
 		if (_token_stream.IsEmpty())
 		{
 			_PrintParseError();
-			ClearNodeVector(arguments);
+			
+			delete node;
+
 			return nullptr;
 		}
 
@@ -327,16 +331,18 @@ ASTNode* LispParser::_CreatSExpression()
 		if (argument_node == nullptr)
 		{
 			_PrintParseError();
-			ClearNodeVector(arguments);
+			
+			delete node;
+
 			return nullptr;
 		}
 
-		arguments.push_back(_CreatNode());
+		node->AddNode(argument_node);
 
 		token = _token_stream.Pop();
 	}
 
-	return new ASTListNode(std::move(function), arguments);
+	return node;
 }
 
 ASTNode* LispParser::_CreatSymbol()
@@ -346,15 +352,19 @@ ASTNode* LispParser::_CreatSymbol()
 	{
 		bool value = token->value == "#t";
 
-		return new ASTSymbolNode(Any(value));
+		return new ASTConstNode(Any(value));
 	}
 	else if (token->token == NUMBER)
 	{
 		double value = strtod(token->value.c_str(), nullptr);
 
-		return new ASTSymbolNode(Any(value));
+		return new ASTConstNode(Any(value));
 	}
 	else if (token->token == STRING)
+	{
+		return new ASTConstNode(Any(token->value));
+	}
+	else if (token->token == SYMBOL)
 	{
 		return new ASTSymbolNode(Any(token->value));
 	}
@@ -364,7 +374,6 @@ ASTNode* LispParser::_CreatSymbol()
 
 void LispParser::_PrintParseError()
 {
-	
 }
 
 void LispParser::ClearNodeVector(ASTNodeVector& node_vector)
@@ -382,7 +391,19 @@ void LispParser::ClearNodeVector(ASTNodeVector& node_vector)
 	node_vector.clear();
 }
 
-void LispParser::Eval(Runtime* runtime)
+Any LispParser::Eval(Runtime* runtime)
 {
-	
+	Any result = nullptr;
+
+	for (auto* ast_node : _ast_vector)
+	{
+		if (ast_node == nullptr)
+		{
+			continue;
+		}
+
+		result = ast_node->Eval(runtime);
+	}
+
+	return result;
 }

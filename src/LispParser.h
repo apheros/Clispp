@@ -2,11 +2,11 @@
 #ifndef _H_LISPPARSER_H_
 #define _H_LISPPARSER_H_
 #include <string>
-#include "common.h"
+#include "Common.h"
 #include "Tokenizer.h"
-#include "Runtime.h"
 
 
+class Runtime;
 class ParseArguments
 {
 public:
@@ -49,7 +49,7 @@ public:
 	void ParserContext();
 	bool Lexer();
 	bool Parser();
-	void Eval(Runtime* runtime);
+	Any Eval(Runtime* runtime);
 
 private:
 	EToken _CheckToken(const char& value);
@@ -63,7 +63,7 @@ private:
 private:
 	ParseArguments _argument;
 	TokenStream _token_stream;
-	ASTNode* _ast_root;
+	ASTNodeVector _ast_vector;
 };
 
 #endif

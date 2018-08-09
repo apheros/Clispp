@@ -2,7 +2,8 @@
 #ifndef _H_AST_H_
 #define _H_AST_H_
 #include "Any.h"
-#include "common.h"
+#include "Common.h"
+#include "Runtime.h"
 
 
 class ASTNode
@@ -12,7 +13,27 @@ public:
 	virtual ~ASTNode() = default;
 
 public:
-	virtual Any Eval() = 0;
+	virtual Any Eval(Runtime* runtime) = 0;
+};
+
+class ASTConstNode final : public ASTNode
+{
+public:
+	ASTConstNode(Any&& value)
+	{
+		_value = std::move(value);
+	}
+
+	~ASTConstNode() = default;
+
+public:
+	Any Eval(Runtime* runtime) override
+	{
+		return _value;
+	}
+
+private:
+	Any _value;
 };
 
 class ASTSymbolNode final : public ASTNode
@@ -20,14 +41,23 @@ class ASTSymbolNode final : public ASTNode
 public:
 	ASTSymbolNode(Any&& value)
 	{
-		_value = value;
+		_value = std::move(value);
 	}
 
 	~ASTSymbolNode() = default;
 
 public:
-	Any Eval() override
+	Any Eval(Runtime* runtime) override
 	{
+		if (runtime != nullptr)
+		{
+			if (_value.Is<string>())
+			{
+				const string& symbol_name = _value.As<string>();
+				return runtime->GetSymbol(symbol_name);
+			}
+		}
+
 		return _value;
 	}
 
@@ -60,7 +90,7 @@ public:
 		_node_arguments.push_back(node);
 	}
 
-	Any Eval() override
+	Any Eval(Runtime* runtime) override
 	{
 		if (_node_arguments.empty())
 		{
@@ -75,8 +105,8 @@ public:
 			return Any::EmptyValue();
 		}
 
-		const auto& functor_name = functor_node->Eval().Value<string>();
-		const auto functor = FunctionRegister::GetInstance()->GetFunction(functor_name);
+		const auto& functor_any = functor_node->Eval(runtime);
+		const auto& functor = functor_any.As<ScriptFunction>();
 
 		if (functor == nullptr)
 		{
@@ -84,7 +114,7 @@ public:
 		}
 
 		AnyVector arguments;
-		for (; iter != _node_arguments.end(); ++iter)
+		for (++iter; iter != _node_arguments.end(); ++iter)
 		{
 			auto* node = *iter;
 			if (node == nullptr)
@@ -92,7 +122,7 @@ public:
 				continue;
 			}
 
-			arguments.push_back(node->Eval());
+			arguments.push_back(node->Eval(runtime));
 		}
 
 		return functor(arguments);

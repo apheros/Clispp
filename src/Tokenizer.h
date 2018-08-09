@@ -2,7 +2,7 @@
 #ifndef _H_TOKENIZER_H_
 #define _H_TOKENIZER_H_
 
-#include "common.h"
+#include "Common.h"
 
 
 enum EToken

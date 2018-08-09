@@ -1,7 +1,7 @@
 #pragma once
 #ifndef _H_IFUNCTION_H_
 #define _H_IFUNCTION_H_
-#include "common.h"
+#include "Common.h"
 #include "Any.h"
 
 //
@@ -29,7 +29,7 @@
 //
 //		for (const Any& item : arguments)
 //		{
-//			sum += item.Value<double>();
+//			sum += item.As<double>();
 //		}
 //
 //		return sum;
@@ -49,35 +49,38 @@
 //
 //		for (const Any& item : arguments)
 //		{
-//			sum += item.Value<double>();
+//			sum += item.As<double>();
 //		}
 //
 //		return sum;
 //	}
 //};
 
-static auto Add = [](AnyVector& arguments) -> Any
+namespace SystemFunction
 {
-	auto sum = 0;
-
-	for (const Any& item : arguments)
+	static ScriptFunction Add = [](AnyVector& arguments) -> Any
 	{
-		sum += item.Value<double>();
-	}
+		double sum = 0;
 
-	return sum;
-};
+		for (const Any& item : arguments)
+		{
+			sum += item.As<double>();
+		}
 
-static auto Minus = [](AnyVector& arguments) -> Any
-{
-	auto diff = arguments[0].Value<double>();
+		return sum;
+	};
 
-	for (unsigned int i = 1; i < arguments.size() - static_cast<unsigned int>(1); i++)
+	static ScriptFunction Minus = [](AnyVector& arguments) -> Any
 	{
-		diff -= arguments[i].Value<double>();
-	}
+		auto diff = arguments[0].As<double>();
 
-	return diff;
-};
+		for (unsigned int i = 1; i < arguments.size(); i++)
+		{
+			diff -= arguments[i].As<double>();
+		}
+
+		return diff;
+	};
+}
 
 #endif

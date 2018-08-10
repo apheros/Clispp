@@ -22,7 +22,7 @@ enum EToken
 class Token
 {
 public:
-	Token(EToken token, string&& value);
+	Token(EToken token, String&& value);
 	~Token() = default;
 
 public:
@@ -30,10 +30,7 @@ public:
 
 public:
 	EToken token;
-	string value;
-
-private:
-	
+	String value;
 };
 
 class TokenStream
@@ -46,7 +43,7 @@ public:
 	void Push(Token* token);
 	const Token* Pop();
 	void UndoPop();
-	bool IsEmpty() const;
+	Boolean IsEmpty() const;
 
 private:
 	void _Clear();

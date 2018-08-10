@@ -1,10 +1,10 @@
 #pragma once
 #ifndef _H_ANY_H_
 #define _H_ANY_H_
+#include "ExceptionDefind.h"
+#include "Define.h"
+#include "Common.h"
 
-
-template<typename T>
-using StorageType = typename decay<typename remove_reference<T>::type>::type;
 
 class Any
 {
@@ -16,7 +16,10 @@ private:
 		virtual ~AnyValueBase() = default;
 		virtual AnyValueBase* Clone() = 0;
 		virtual const std::type_info& Type() const = 0;
-		//virtual string ToString() = 0;
+		virtual Boolean IsBool() const = 0;
+		virtual Boolean IsNumber() const = 0;
+		virtual Boolean IsString() const = 0;
+		virtual Boolean IsList() const = 0;
 	};
 
 	template<typename T>
@@ -46,15 +49,30 @@ private:
 			return _value;
 		}
 
+		Boolean IsBool() const override
+		{
+			return is_bool<T>::value;
+		}
+
+		Boolean IsNumber() const override
+		{
+			return is_number<T>::value;
+		}
+
+		Boolean IsString() const override
+		{
+			return is_string<T>::value;
+		}
+
+		Boolean IsList() const override
+		{
+			return is_list<T>::value;
+		}
+
 		const std::type_info& Type() const override
 		{
 			return typeid(T);
 		}
-
-		//string ToString() override
-		//{
-		//	return string(Type().name()) + ": " + to_string(_value);
-		//}
 
 	private:
 		T _value;
@@ -171,86 +189,38 @@ public:
 	}
 
 	template<typename T>
-	bool Is() const
+	Boolean Is() const
 	{
 		return Type() == typeid(T);
 	}
 
-	//template<typename T>
-	//typename std::enable_if<std::is_same<T, bool>::value, bool>::type
-	//As() const
-	//{
-	//	AnyValue<bool>* value = dynamic_cast<AnyValue<bool>*>(_value_ptr);
-	//	if (value == nullptr)
-	//	{
-	//		//throw std::bad_cast();
-	//		return false;
-	//	}
+	Boolean IsBool() const
+	{
+		return IsNull()? false : _value_ptr->IsBool();
+	}
 
-	//	return value->GetValue();
-	//}
+	Boolean IsNumber() const
+	{
+		return IsNull() ? false : _value_ptr->IsNumber();
+	}
 
-	//template<typename T>
-	//typename std::enable_if<std::is_same<T, string>::value, string>::type
-	//	As() const
-	//{
-	//	//auto& type_id = typeid(_value_ptr);
-	//	//auto& target_type_id = typeid(AnyValue<string>*);
+	Boolean IsString() const
+	{
+		return IsNull() ? false : _value_ptr->IsString();
+	}
 
-	//	//if (type_id != target_type_id)
-	//	//{
-	//	//	return string();
-	//	//}
-
-	//	Any::AnyValue<string>* value = static_cast<Any::AnyValue<string>*>(_value_ptr);
-	//	if (value == nullptr)
-	//	{
-	//		//throw std::bad_cast();
-	//		return string();
-	//	}
-
-	//	return value->GetValue();
-	//}
-
-	//template<typename T>
-	//typename std::enable_if<std::is_same<T, double>::value, double>::type
-	//	As() const
-	//{
-	//	AnyValue<double>* value = dynamic_cast<AnyValue<double>*>(_value_ptr);
-	//	if (value == nullptr)
-	//	{
-	//		//throw std::bad_cast();
-	//		return 0.0;
-	//	}
-
-	//	return value->GetValue();
-	//}
-
-	//template<typename T>
-	//typename std::enable_if<std::is_same<T, ScriptFunction>::value, ScriptFunction>::type
-	//	As() const
-	//{
-	//	AnyValue<ScriptFunction>* value = dynamic_cast<AnyValue<ScriptFunction>*>(_value_ptr);
-	//	if (value == nullptr)
-	//	{
-	//		throw std::bad_cast();
-	//	}
-
-	//	return value->GetValue();
-	//}
+	Boolean IsList() const
+	{
+		return IsNull() ? false : _value_ptr->IsList();
+	}
 
 	template<typename T>
 	StorageType<T>& As() const
 	{
-		if (IsNull() || Type() != typeid(T))
-		{
-			throw std::bad_cast();
-		}
-
 		auto* value = dynamic_cast<AnyValue<StorageType<T>>*>(_value_ptr);
 		if (value == nullptr)
 		{
-			throw std::bad_cast();
+			throw ::bad_any_cast();
 		}
 
 		return value->GetValue();
@@ -262,7 +232,7 @@ public:
 		return empty_value;
 	}
 
-	bool IsNull() const
+	Boolean IsNull() const
 	{
 		return _value_ptr == nullptr;
 	}
@@ -277,15 +247,34 @@ public:
 		return _value_ptr->Type();
 	}
 
-	//string toString() const
-	//{
-	//	if (IsNull())
-	//	{
-	//		return EMPTY_STRING;
-	//	}
+	String ToString()const
+	{
+		if (IsBool())
+		{
+			return As<Boolean>() ? "true" : "false";
+		}
+		if (IsNumber())
+		{
+			return to_string(As<Number>());
+		}
+		if (IsString())
+		{
+			return As<String>();
+		}
+		if (IsList())
+		{
+			String result;
+			const auto& list = As<AnyList>();
+			for (const auto& item : list)
+			{
+				result += item.ToString();
+			}
 
-	//	return std::move(_value_ptr->ToString());
-	//}
+			return result;
+		}
+
+		return EMPTY_STRING;
+	}
 
 private:
 	AnyValueBase* _value_ptr;

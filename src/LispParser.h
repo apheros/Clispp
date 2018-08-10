@@ -1,7 +1,6 @@
 #pragma once
 #ifndef _H_LISPPARSER_H_
 #define _H_LISPPARSER_H_
-#include <string>
 #include "Common.h"
 #include "Tokenizer.h"
 
@@ -15,16 +14,16 @@ public:
 
 	void OnBeforeLexer();
 	void OnAfterLexer();
-	void AddLine(string&& line);
+	void AddLine(String&& line);
 	void GetNextLine();
 	char GetNextChar();
 	char GetBeforeChar();
 	void UnDoGetNextChar();
-	string GetValue();
-	bool IsEnd();
+	String GetValue();
+	Boolean IsEnd();
 	void Clear();
 
-	string GetErrorString();
+	String GetErrorString();
 
 private:
 	StringVector _file_lines;
@@ -44,15 +43,15 @@ public:
 public:
 	static void ClearNodeVector(ASTNodeVector& node_vector);
 
-	void ParserFromFile(const string& file_name);
-	void ParserFromString(string&& file_content);
+	void ParserFromFile(const String& file_name);
+	void ParserFromString(String&& file_content);
 	void ParserContext();
-	bool Lexer();
-	bool Parser();
+	Boolean Lexer();
+	Boolean Parser();
 	Any Eval(Runtime* runtime);
 
 private:
-	EToken _CheckToken(const char& value);
+	static EToken _CheckToken(const char& value);
 	void _PrintLexerError();
 	void _PrintParseError();
 	ASTNode* _CreatNode();

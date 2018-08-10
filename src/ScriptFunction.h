@@ -4,82 +4,55 @@
 #include "Common.h"
 #include "Any.h"
 
-//
-//class ScriptFunction
-//{
-//public:
-//	ScriptFunction() = default;
-//	virtual ~ScriptFunction() = default;
-//
-//public:
-//	virtual const string& GetFunctionName() = 0;
-//	virtual Any operator()(const AnyVector& arguments) = 0;
-//};
-//
-//class Add : public ScriptFunction
-//{
-//public:
-//	Add() = default;
-//	~Add() = default;
-//
-//public:
-//	Any operator()(const AnyVector& arguments) override
-//	{
-//		double sum = 0;
-//
-//		for (const Any& item : arguments)
-//		{
-//			sum += item.As<double>();
-//		}
-//
-//		return sum;
-//	}
-//};
-//
-//class Minus : public ScriptFunction
-//{
-//public:
-//	Minus() = default;
-//	~Minus() = default;
-//
-//public:
-//	Any operator()(const AnyVector& arguments) override
-//	{
-//		double diff = 0;
-//
-//		for (const Any& item : arguments)
-//		{
-//			sum += item.As<double>();
-//		}
-//
-//		return sum;
-//	}
-//};
 
 namespace SystemFunction
 {
-	static ScriptFunction Add = [](AnyVector& arguments) -> Any
+	static ScriptFunction Addition = [](AnyVector& arguments) -> Any
 	{
-		double sum = 0;
+		auto result = 1.0;
 
 		for (const Any& item : arguments)
 		{
-			sum += item.As<double>();
+			result += item.As<Number>();
 		}
 
-		return sum;
+		return result;
 	};
 
-	static ScriptFunction Minus = [](AnyVector& arguments) -> Any
+	static ScriptFunction Subtraction = [](AnyVector& arguments) -> Any
 	{
-		auto diff = arguments[0].As<double>();
+		auto result = arguments[0].As<Number>();
 
 		for (unsigned int i = 1; i < arguments.size(); i++)
 		{
-			diff -= arguments[i].As<double>();
+			result -= arguments[i].As<Number>();
 		}
 
-		return diff;
+		return result;
+	};
+
+	static ScriptFunction Multiplication = [](AnyVector& arguments) -> Any
+	{
+		auto result = 1.0;
+
+		for (const Any& item : arguments)
+		{
+			result *= item.As<Number>();
+		}
+
+		return result;
+	};
+
+	static ScriptFunction Division = [](AnyVector& arguments) -> Any
+	{
+		auto result = arguments[0].As<Number>();
+
+		for (unsigned int i = 1; i < arguments.size(); i++)
+		{
+			result /= arguments[i].As<Number>();
+		}
+
+		return result;
 	};
 }
 

@@ -1,27 +1,37 @@
 #pragma once
+#include <string>
+#include <functional>
+
 #include <vector>
 #include <map>
-#include <functional>
 #include <set>
+#include <list>
 
 
 using namespace std;
 
 
-static const string EMPTY_STRING = string();
+#define Number double
+#define Boolean bool
+#define String string
+#define List AnyList
 
 
-typedef vector<string> StringVector;
+static const String EMPTY_STRING = String();
+
+
+typedef vector<String> StringVector;
 
 class ASTNode;
 typedef vector<ASTNode*> ASTNodeVector;
 
 class Any;
 typedef vector<Any> AnyVector;
-typedef map<string, Any> StringAnyMap;
+typedef map<String, Any> StringAnyMap;
+typedef list<Any> AnyList;
 
 class Token;
 typedef vector<const Token*> TokenVector;
 
 typedef function<Any(AnyVector&)> ScriptFunction;
-typedef map<std::string, ScriptFunction> NameFunctionMap;
+typedef map<String, ScriptFunction> NameFunctionMap;

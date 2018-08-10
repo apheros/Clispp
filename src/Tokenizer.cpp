@@ -1,7 +1,7 @@
 #include "Tokenizer.h"
 
 
-Token::Token(EToken token, string&& value)
+Token::Token(EToken token, String&& value)
 	:token(token)
 	,value(std::move(value))
 {
@@ -61,7 +61,7 @@ void TokenStream::UndoPop()
 	}
 }
 
-bool TokenStream::IsEmpty() const
+Boolean TokenStream::IsEmpty() const
 {
 	return _token_number >= _max_token_number;
 }

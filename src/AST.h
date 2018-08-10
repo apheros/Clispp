@@ -51,9 +51,9 @@ public:
 	{
 		if (runtime != nullptr)
 		{
-			if (_value.Is<string>())
+			if (_value.Is<String>())
 			{
-				const string& symbol_name = _value.As<string>();
+				const String& symbol_name = _value.As<String>();
 				return runtime->GetSymbol(symbol_name);
 			}
 		}

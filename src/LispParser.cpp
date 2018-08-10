@@ -20,21 +20,21 @@ ParseArguments::~ParseArguments()
 
 void ParseArguments::OnBeforeLexer()
 {
-	const string& line = _file_lines[_line_number];
+	const String& line = _file_lines[_line_number];
 	_max_column_number = static_cast<unsigned int>(line.size());
 }
 
 void ParseArguments::OnAfterLexer()
 {
-	
+	Clear();
 }
 
-bool ParseArguments::IsEnd()
+Boolean ParseArguments::IsEnd()
 {
 	return _line_number >= _max_line_number;
 }
 
-void ParseArguments::AddLine(string&& line)
+void ParseArguments::AddLine(String&& line)
 {
 	if (line.empty())
 	{
@@ -51,7 +51,7 @@ void ParseArguments::GetNextLine()
 	{
 		_column_number = 0;
 
-		const string& line = _file_lines[_line_number++];
+		const String& line = _file_lines[_line_number++];
 		_max_column_number = static_cast<unsigned int>(line.size());
 	}
 }
@@ -106,9 +106,9 @@ char ParseArguments::GetBeforeChar()
 	}
 }
 
-string ParseArguments::GetValue()
+String ParseArguments::GetValue()
 {
-	const string& line = _file_lines[_line_number];
+	const String& line = _file_lines[_line_number];
 
 	const auto begin_position = _column_number;
 	while ((_max_column_number > _column_number))
@@ -137,7 +137,7 @@ void ParseArguments::Clear()
 	_max_line_number = 0;
 }
 
-string ParseArguments::GetErrorString()
+String ParseArguments::GetErrorString()
 {
 	return "Synax Error In Line: "  + std::to_string(_line_number) + " Colume: " + std::to_string(_column_number);
 }
@@ -151,7 +151,7 @@ LispParser::~LispParser()
 {
 }
 
-void LispParser::ParserFromFile(const string& file_name)
+void LispParser::ParserFromFile(const String& file_name)
 {
 	ifstream ifstream;
 	ifstream.open(file_name, ios::in);
@@ -159,13 +159,10 @@ void LispParser::ParserFromFile(const string& file_name)
 	{
 		while (!ifstream.eof())
 		{
-			string temp_line;
+			String temp_line;
 			getline(ifstream, temp_line);
 			_argument.AddLine(std::move(temp_line));
 		}
-
-		//const string file_content((std::istreambuf_iterator<char>(ifstream)), std::istreambuf_iterator<char>());
-		//ParserFromString(file_content);
 		
 		ifstream.close();
 
@@ -173,7 +170,7 @@ void LispParser::ParserFromFile(const string& file_name)
 	}
 }
 
-void LispParser::ParserFromString(string&& file_content)
+void LispParser::ParserFromString(String&& file_content)
 {
 	_argument.AddLine(std::move(file_content));
 
@@ -193,7 +190,7 @@ void LispParser::ParserContext()
 	}
 }
 
-bool LispParser::Lexer()
+Boolean LispParser::Lexer()
 {
 	_argument.OnBeforeLexer();
 
@@ -209,22 +206,22 @@ bool LispParser::Lexer()
 
 		switch (token)
 		{
-		case LPAREN:
-		case RPAREN:
+		case EToken::LPAREN:
+		case EToken::RPAREN:
 			{
-			_token_stream.Push(new Token(token, string(1, token_char)));
+			_token_stream.Push(new Token(token, String(1, token_char)));
 			break;
 			}
-		case BOOLEN:
-		case NUMBER:
-		case STRING:
-		case SYMBOL:
+		case EToken::BOOLEN:
+		case EToken::NUMBER:
+		case EToken::STRING:
+		case EToken::SYMBOL:
 			{
 			_argument.UnDoGetNextChar();
 			_token_stream.Push(new Token(token, _argument.GetValue()));
 			break;
 			}
-		case SPACE:
+		case EToken::SPACE:
 			{
 			break;
 			}
@@ -245,34 +242,34 @@ EToken LispParser::_CheckToken(const char& value)
 {
 	if (value == '(')
 	{
-		return LPAREN;
+		return EToken::LPAREN;
 	}
 	if (value == ')')
 	{
-		return RPAREN;
+		return EToken::RPAREN;
 	}
 	if (value == '#')
 	{
-		return BOOLEN;
+		return EToken::BOOLEN;
 	}
 	if (value == '"')
 	{
-		return STRING;
+		return EToken::STRING;
 	}
 	if (value >= '0' && value <= '9')
 	{
-		return NUMBER;
+		return EToken::NUMBER;
 	}
 	if (value == ' ')
 	{
-		return SPACE;
+		return EToken::SPACE;
 	}
 	else if (value != 0)
 	{
-		return SYMBOL;
+		return EToken::SYMBOL;
 	}
 
-	return NONE;
+	return EToken::NONE;
 }
 
 void LispParser::_PrintLexerError()
@@ -280,7 +277,7 @@ void LispParser::_PrintLexerError()
 	cout << _argument.GetErrorString() << endl;
 }
 
-bool LispParser::Parser()
+Boolean LispParser::Parser()
 {
 	while (!_token_stream.IsEmpty())
 	{
@@ -293,14 +290,14 @@ bool LispParser::Parser()
 ASTNode* LispParser::_CreatNode()
 {
 	const Token* token = _token_stream.Pop();
-	if (token->token == LPAREN)
+	if (token->token == EToken::LPAREN)
 	{
 		return _CreatSExpression();
 	}
-	else if ((token->token == BOOLEN)
-		|| (token->token == NUMBER)
-		|| (token->token == STRING)
-		|| (token->token == SYMBOL))
+	else if ((token->token == EToken::BOOLEN)
+		|| (token->token == EToken::NUMBER)
+		|| (token->token == EToken::STRING)
+		|| (token->token == EToken::SYMBOL))
 	{
 		_token_stream.UndoPop();
 		return _CreatSymbol();
@@ -311,10 +308,10 @@ ASTNode* LispParser::_CreatNode()
 
 ASTNode* LispParser::_CreatSExpression()
 {
-	auto node = new ASTListNode;
+	auto* node = new ASTListNode();
 
 	const auto* token = _token_stream.Pop();
-	while (token->token != RPAREN)
+	while (token->token != EToken::RPAREN)
 	{
 		if (_token_stream.IsEmpty())
 		{
@@ -322,7 +319,7 @@ ASTNode* LispParser::_CreatSExpression()
 			
 			delete node;
 
-			return nullptr;
+			throw wrong_syntax();
 		}
 
 		_token_stream.UndoPop();
@@ -334,7 +331,7 @@ ASTNode* LispParser::_CreatSExpression()
 			
 			delete node;
 
-			return nullptr;
+			throw wrong_type();
 		}
 
 		node->AddNode(argument_node);
@@ -348,23 +345,23 @@ ASTNode* LispParser::_CreatSExpression()
 ASTNode* LispParser::_CreatSymbol()
 {
 	const Token* token = _token_stream.Pop();
-	if (token->token == BOOLEN)
+	if (token->token == EToken::BOOLEN)
 	{
-		bool value = token->value == "#t";
+		auto value = token->value == "#t";
 
 		return new ASTConstNode(Any(value));
 	}
-	else if (token->token == NUMBER)
+	else if (token->token == EToken::NUMBER)
 	{
-		double value = strtod(token->value.c_str(), nullptr);
+		auto value = strtod(token->value.c_str(), nullptr);
 
 		return new ASTConstNode(Any(value));
 	}
-	else if (token->token == STRING)
+	else if (token->token == EToken::STRING)
 	{
 		return new ASTConstNode(Any(token->value));
 	}
-	else if (token->token == SYMBOL)
+	else if (token->token == EToken::SYMBOL)
 	{
 		return new ASTSymbolNode(Any(token->value));
 	}
@@ -374,6 +371,7 @@ ASTNode* LispParser::_CreatSymbol()
 
 void LispParser::_PrintParseError()
 {
+	cout << "Parse Error" << endl;
 }
 
 void LispParser::ClearNodeVector(ASTNodeVector& node_vector)

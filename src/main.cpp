@@ -1,5 +1,5 @@
 #include <iostream>
-#include <string>
+#include "Common.h"
 #include "LispParser.h"
 #include "Runtime.h"
 #include "Any.h"
@@ -10,7 +10,7 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	const string file_name = "E:/Workshop/Cpp/LispParser/res/test.lsp";
+	const String file_name = "E:/Workshop/Cpp/LispParser/res/test.lsp";
 
 	cout << "Start Parsing Lisp file: " << file_name << endl;
 
@@ -18,11 +18,11 @@ int main(int argc, char* argv[])
 
 	parser.ParserFromFile(file_name);
 
-	auto* runtime = new Runtime;
+	auto* runtime = new Runtime();
 
 	const Any& result = parser.Eval(runtime);
 
-	//cout << result.toString() << endl;
+	cout << result.ToString() << endl;
 
 	return 0;
 }

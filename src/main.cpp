@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 
 	const Any& result = parser.Eval(runtime);
 
-	cout << result.ToString() << endl;
+	cout << "Result: " << result.ToString() << endl;
 
 	return 0;
 }

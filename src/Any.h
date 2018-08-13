@@ -131,6 +131,111 @@ public:
 	}
 
 public:
+	const std::type_info& Type() const
+	{
+		if (IsNull())
+		{
+			return typeid(nullptr);
+		}
+
+		return _value_ptr->Type();
+	}
+
+	static Any& EmptyValue()
+	{
+		static Any empty_value;
+		return empty_value;
+	}
+
+	Boolean IsNull() const
+	{
+		return _value_ptr == nullptr;
+	}
+
+	Boolean IsBool() const
+	{
+		return IsNull() ? false : _value_ptr->IsBool();
+	}
+
+	Boolean IsNumber() const
+	{
+		return IsNull() ? false : _value_ptr->IsNumber();
+	}
+
+	Boolean IsString() const
+	{
+		return IsNull() ? false : _value_ptr->IsString();
+	}
+
+	Boolean IsList() const
+	{
+		return IsNull() ? false : _value_ptr->IsList();
+	}
+
+	AnyValueBase* CloneValue() const
+	{
+		if (IsNull())
+		{
+			return nullptr;
+		}
+
+		return _value_ptr->Clone();
+	}
+
+	template<typename T>
+	Boolean Is() const
+	{
+		return Type() == typeid(T);
+	}
+
+	template<typename T>
+	StorageType<T>& As() const
+	{
+		auto* value = dynamic_cast<AnyValue<StorageType<T>>*>(_value_ptr);
+		if (value == nullptr)
+		{
+			throw ::bad_any_cast(Type().name());
+		}
+
+		return value->GetValue();
+	}
+
+	template<typename T>
+	operator T()
+	{
+		return As<StorageType<T>>();
+	}
+
+	String ToString() const
+	{
+		if (IsBool())
+		{
+			return As<Boolean>() ? "true" : "false";
+		}
+		if (IsNumber())
+		{
+			return to_string(As<Number>());
+		}
+		if (IsString())
+		{
+			return As<String>();
+		}
+		if (IsList())
+		{
+			String result;
+			const auto& list = As<List>();
+			for (const auto& item : list)
+			{
+				result += item.ToString();
+			}
+
+			return result;
+		}
+
+		return EMPTY_STRING;
+	}
+
+public:
 	template<typename T>
 	Any& operator=(const T& value)
 	{
@@ -172,109 +277,125 @@ public:
 		return *this;
 	}
 
-	template<typename T>
-	operator T()
+	bool operator==(const Any& rhs) const
 	{
-		return As<T>();
-	}
-
-	AnyValueBase* CloneValue() const
-	{
-		if (IsNull())
+		if (IsNull() && rhs.IsNull())
 		{
-			return nullptr;
+			return true;
+		}
+		if (IsBool() && rhs.IsBool())
+		{
+			return As<Boolean>() == rhs.As<Boolean>();
+		}
+		if (IsNumber() && rhs.IsNumber())
+		{
+			return As<Number>() == rhs.As<Number>();
+		}
+		if (IsString() && rhs.IsString())
+		{
+			return As<String>() == rhs.As<String>();
+		}
+		if (IsList() && rhs.IsList())
+		{
+			return As<List>() == rhs.As<List>();
 		}
 
-		return _value_ptr->Clone();
+		throw no_operator("==");
 	}
 
-	template<typename T>
-	Boolean Is() const
+	bool operator!=(const Any& rhs) const
 	{
-		return Type() == typeid(T);
+		return !(*this == rhs);
 	}
 
-	Boolean IsBool() const
+	bool operator>(const Any& rhs) const
 	{
-		return IsNull()? false : _value_ptr->IsBool();
+		return !(*this < rhs);
 	}
 
-	Boolean IsNumber() const
+	bool operator<(const Any& rhs) const
 	{
-		return IsNull() ? false : _value_ptr->IsNumber();
-	}
-
-	Boolean IsString() const
-	{
-		return IsNull() ? false : _value_ptr->IsString();
-	}
-
-	Boolean IsList() const
-	{
-		return IsNull() ? false : _value_ptr->IsList();
-	}
-
-	template<typename T>
-	StorageType<T>& As() const
-	{
-		auto* value = dynamic_cast<AnyValue<StorageType<T>>*>(_value_ptr);
-		if (value == nullptr)
+		if (IsNumber() && rhs.IsNumber())
 		{
-			throw ::bad_any_cast();
+			return As<Number>() < rhs.As<Number>();
+		}
+		if (IsString() && rhs.IsString())
+		{
+			return As<String>() < rhs.As<String>();
 		}
 
-		return value->GetValue();
+		throw no_operator("<");
 	}
 
-	static Any& EmptyValue()
+	bool operator>=(const Any& rhs) const
 	{
-		static Any empty_value;
-		return empty_value;
+		return (*this == rhs) || (*this > rhs);
 	}
 
-	Boolean IsNull() const
+	bool operator<=(const Any& rhs) const
 	{
-		return _value_ptr == nullptr;
+		return (*this == rhs) || (*this < rhs);
 	}
 
-	const std::type_info& Type() const
-	{
-		if (IsNull())
-		{
-			return typeid(nullptr);
-		}
+	//Any operator+(const Any& rhs) const
+	//{
+	//	if (IsNumber() && rhs.IsNumber())
+	//	{
+	//		return As<Number>() + rhs.As<Number>();
+	//	}
+	//	if (IsString() && rhs.IsString())
+	//	{
+	//		return As<String>() + rhs.As<String>();
+	//	}
+	//	if (IsList() && rhs.IsList())
+	//	{
+	//		List result_list;
 
-		return _value_ptr->Type();
-	}
+	//		for (const Any& item : As<List>())
+	//		{
+	//			result_list.push_back(item);
+	//		}
 
-	String ToString()const
-	{
-		if (IsBool())
-		{
-			return As<Boolean>() ? "true" : "false";
-		}
-		if (IsNumber())
-		{
-			return to_string(As<Number>());
-		}
-		if (IsString())
-		{
-			return As<String>();
-		}
-		if (IsList())
-		{
-			String result;
-			const auto& list = As<AnyList>();
-			for (const auto& item : list)
-			{
-				result += item.ToString();
-			}
+	//		for (const Any& item : rhs.As<List>())
+	//		{
+	//			result_list.push_back(item);
+	//		}
 
-			return result;
-		}
+	//		return result_list;
+	//	}
 
-		return EMPTY_STRING;
-	}
+	//	throw no_operator();
+	//}
+
+	//Any operator-(const Any& rhs) const
+	//{
+	//	if (IsNumber() && rhs.IsNumber())
+	//	{
+	//		return As<Number>() - rhs.As<Number>();
+	//	}
+
+	//	throw no_operator();
+	//}
+
+	//Any operator*(const Any& rhs) const
+	//{
+	//	if (IsNumber() && rhs.IsNumber())
+	//	{
+	//		return As<Number>() * rhs.As<Number>();
+	//	}
+
+	//	throw no_operator();
+	//}
+
+	//Any operator/(const Any& rhs) const
+	//{
+	//	if (IsNumber() && rhs.IsNumber())
+	//	{
+	//		return As<Number>() / rhs.As<Number>();
+	//	}
+
+	//	throw no_operator();
+	//}
 
 private:
 	AnyValueBase* _value_ptr;

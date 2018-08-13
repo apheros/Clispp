@@ -319,7 +319,7 @@ ASTNode* LispParser::_CreatSExpression()
 			
 			delete node;
 
-			throw wrong_syntax();
+			throw wrong_syntax(0, 0);
 		}
 
 		_token_stream.UndoPop();

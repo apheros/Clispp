@@ -51,11 +51,7 @@ public:
 	{
 		if (runtime != nullptr)
 		{
-			if (_value.Is<String>())
-			{
-				const String& symbol_name = _value.As<String>();
-				return runtime->GetSymbol(symbol_name);
-			}
+			return runtime->GetSymbol(_value);
 		}
 
 		return _value;
@@ -125,7 +121,7 @@ public:
 			arguments.push_back(node->Eval(runtime));
 		}
 
-		return functor(arguments);
+		return functor(runtime, arguments);
 	}
 
 private:

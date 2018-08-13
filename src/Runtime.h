@@ -9,10 +9,10 @@ public:
 	~Runtime();
 
 public:
-	void AddSymbol(const String& symbol_name, Any&& symbol);
-	Any& GetSymbol(const String& symbol_name);
+	void AddSymbol(Any&& symbol_name, Any&& symbol);
+	Any& GetSymbol(Any& symbol_name);
 
 private:
-	StringAnyMap _global_symbol_stack;
+	AnyAnyMap _global_symbol_stack;
 };
 

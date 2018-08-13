@@ -5,10 +5,11 @@
 
 Runtime::Runtime()
 {
-	AddSymbol("+", Any(SystemFunction::Addition));
-	AddSymbol("-", Any(SystemFunction::Subtraction));
-	AddSymbol("*", Any(SystemFunction::Multiplication));
-	AddSymbol("/", Any(SystemFunction::Division));
+	AddSymbol(string("+"), SystemFunction::Addition);
+	AddSymbol(string("-"), SystemFunction::Subtraction);
+	AddSymbol(string("*"), SystemFunction::Multiplication);
+	AddSymbol(string("/"), SystemFunction::Division);
+	AddSymbol(string("let"), SystemFunction::Let);
 }
 
 Runtime::~Runtime()
@@ -16,12 +17,12 @@ Runtime::~Runtime()
 	_global_symbol_stack.clear();
 }
 
-void Runtime::AddSymbol(const String& symbol_name, Any&& symbol)
+void Runtime::AddSymbol(Any&& symbol_name, Any&& symbol)
 {
-	_global_symbol_stack[symbol_name] = std::move(symbol);
+	_global_symbol_stack[std::move(symbol_name)] = std::move(symbol);
 }
 
-Any& Runtime::GetSymbol(const String& symbol_name)
+Any& Runtime::GetSymbol(Any& symbol_name)
 {
 	auto iter = _global_symbol_stack.find(symbol_name);
 	if (iter != _global_symbol_stack.end())
@@ -29,5 +30,6 @@ Any& Runtime::GetSymbol(const String& symbol_name)
 		return iter->second;
 	}
 
-	throw std::bad_typeid();
+	/*throw cannot_find_symbol();*/
+	return symbol_name;
 }

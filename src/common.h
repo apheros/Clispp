@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <list>
+#include <unordered_map>
 
 
 using namespace std;
@@ -27,11 +28,13 @@ typedef vector<ASTNode*> ASTNodeVector;
 
 class Any;
 typedef vector<Any> AnyVector;
-typedef map<String, Any> StringAnyMap;
+typedef map<Any, Any> AnyAnyMap;
+typedef unordered_map<Any, Any> AnyAnyHashMap;
 typedef list<Any> AnyList;
 
 class Token;
 typedef vector<const Token*> TokenVector;
 
-typedef function<Any(AnyVector&)> ScriptFunction;
+class Runtime;
+typedef function<Any(Runtime*, AnyVector&)> ScriptFunction;
 typedef map<String, ScriptFunction> NameFunctionMap;

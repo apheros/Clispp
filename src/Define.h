@@ -30,8 +30,8 @@ struct is_string : std::false_type
 {
 };
 
-template<>
-struct is_string<String> : std::true_type
+template<typename E, typename T, typename A>
+struct is_string<std::basic_string<E, T, A>> : std::true_type
 {
 };
 

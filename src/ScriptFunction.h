@@ -103,7 +103,7 @@ namespace SystemFunction
 			throw wrong_argument_size();
 		}
 
-		runtime->AddSymbol(std::move(arguments[0]), std::move(arguments[1]));
+		runtime->AddGlobalymbol(std::move(arguments[0]), std::move(arguments[1]));
 
 		return Any::EmptyValue();
 	};
@@ -146,10 +146,15 @@ namespace SystemFunction
 
 			for (size_t i = 0; i < symbol_name_list.size(); i++)
 			{
-				runtime->AddSymbol(std::move(symbol_name_list[i]), std::move(symbol_value_list[i]));
+				runtime->AddLocalSymbol(symbol_name_list[i], std::move(symbol_value_list[i]));
 			}
 
-			return lambda_node_list[2]->Eval(runtime);
+			auto&& result = lambda_node_list[2]->Eval(runtime);
+
+			for (const auto& symbol_name : symbol_name_list)
+			{
+				runtime->RemoveSymbol(symbol_name);
+			}
 		});
 	};
 }

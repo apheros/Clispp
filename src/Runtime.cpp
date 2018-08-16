@@ -21,9 +21,14 @@ Runtime::~Runtime()
 {
 }
 
-void Runtime::AddSymbol(Any&& symbol_name, Any&& symbol)
+void Runtime::AddGlobalymbol(Any&& symbol_name, Any&& symbol)
 {
-	_local_symbol_stack[std::move(symbol_name)] = std::move(symbol);
+	_global_symbol_stack[std::move(symbol_name)] = std::move(symbol);
+}
+
+void Runtime::AddLocalSymbol(const Any& symbol_name, Any&& symbol)
+{
+	_local_symbol_stack[symbol_name] = std::move(symbol);
 }
 
 void Runtime::RemoveSymbol(const Any& symbol_name)
@@ -37,14 +42,14 @@ void Runtime::RemoveSymbol(const Any& symbol_name)
 
 Any& Runtime::GetSymbol(Any& symbol_name)
 {
-	auto iter = _static_symbol_stack.find(symbol_name);
-	if (iter != _static_symbol_stack.end())
+	auto iter = _local_symbol_stack.find(symbol_name);
+	if (iter != _local_symbol_stack.end())
 	{
 		return iter->second;
 	}
 
-	iter = _local_symbol_stack.find(symbol_name);
-	if (iter != _local_symbol_stack.end())
+	iter = _static_symbol_stack.find(symbol_name);
+	if (iter != _static_symbol_stack.end())
 	{
 		return iter->second;
 	}

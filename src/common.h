@@ -36,5 +36,5 @@ class Token;
 typedef vector<const Token*> TokenVector;
 
 class Runtime;
-typedef function<Any(Runtime*, AnyVector&)> ScriptFunction;
+typedef function<Any(Runtime*, ASTNodeVector&)> ScriptFunction;
 typedef map<String, ScriptFunction> NameFunctionMap;

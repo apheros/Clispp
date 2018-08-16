@@ -3,29 +3,48 @@
 #include "ScriptFunction.h"
 
 
+AnyAnyMap Runtime::_static_symbol_stack = {
+	{ string("+"), SystemFunction::Addition },
+	{ string("-"), SystemFunction::Subtraction },
+	{ string("-"), SystemFunction::Subtraction },
+	{ string("*"), SystemFunction::Multiplication },
+	{ string("/"), SystemFunction::Division },
+	{ string("define"), SystemFunction::Define },
+	{ string("lambda"), SystemFunction::Lambda },
+};
+
 Runtime::Runtime()
 {
-	AddSymbol(string("+"), SystemFunction::Addition);
-	AddSymbol(string("-"), SystemFunction::Subtraction);
-	AddSymbol(string("*"), SystemFunction::Multiplication);
-	AddSymbol(string("/"), SystemFunction::Division);
-	AddSymbol(string("let"), SystemFunction::Let);
 }
 
 Runtime::~Runtime()
 {
-	_global_symbol_stack.clear();
 }
 
 void Runtime::AddSymbol(Any&& symbol_name, Any&& symbol)
 {
-	_global_symbol_stack[std::move(symbol_name)] = std::move(symbol);
+	_local_symbol_stack[std::move(symbol_name)] = std::move(symbol);
+}
+
+void Runtime::RemoveSymbol(const Any& symbol_name)
+{
+	const auto iter = _local_symbol_stack.find(symbol_name);
+	if (iter != _local_symbol_stack.end())
+	{
+		_local_symbol_stack.erase(iter);
+	}
 }
 
 Any& Runtime::GetSymbol(Any& symbol_name)
 {
-	auto iter = _global_symbol_stack.find(symbol_name);
-	if (iter != _global_symbol_stack.end())
+	auto iter = _static_symbol_stack.find(symbol_name);
+	if (iter != _static_symbol_stack.end())
+	{
+		return iter->second;
+	}
+
+	iter = _local_symbol_stack.find(symbol_name);
+	if (iter != _local_symbol_stack.end())
 	{
 		return iter->second;
 	}

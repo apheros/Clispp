@@ -86,6 +86,11 @@ public:
 		_node_arguments.push_back(node);
 	}
 
+	ASTNodeVector& GetArguments()
+	{
+		return _node_arguments;
+	}
+
 	Any Eval(Runtime* runtime) override
 	{
 		if (_node_arguments.empty())
@@ -109,19 +114,7 @@ public:
 			return Any::EmptyValue();
 		}
 
-		AnyVector arguments;
-		for (++iter; iter != _node_arguments.end(); ++iter)
-		{
-			auto* node = *iter;
-			if (node == nullptr)
-			{
-				continue;
-			}
-
-			arguments.push_back(node->Eval(runtime));
-		}
-
-		return functor(runtime, arguments);
+		return functor(runtime, _node_arguments);
 	}
 
 private:

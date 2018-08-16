@@ -10,9 +10,10 @@ public:
 
 public:
 	void AddSymbol(Any&& symbol_name, Any&& symbol);
+	void RemoveSymbol(const Any& symbol_name);
 	Any& GetSymbol(Any& symbol_name);
 
 private:
-	AnyAnyMap _global_symbol_stack;
+	static AnyAnyMap _static_symbol_stack;
+	AnyAnyMap _local_symbol_stack;
 };
-

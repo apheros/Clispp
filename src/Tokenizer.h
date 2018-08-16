@@ -16,6 +16,7 @@ enum EToken
 	LIST,
 	SYMBOL,
 	SPACE,
+	ENDL,
 	END,
 };
 

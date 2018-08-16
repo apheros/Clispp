@@ -20,6 +20,8 @@ ParseArguments::~ParseArguments()
 
 void ParseArguments::OnBeforeLexer()
 {
+	_max_line_number = _file_lines.size() - 1;
+
 	const String& line = _file_lines[_line_number];
 	_max_column_number = static_cast<unsigned int>(line.size());
 }
@@ -31,7 +33,7 @@ void ParseArguments::OnAfterLexer()
 
 Boolean ParseArguments::IsEnd()
 {
-	return _line_number >= _max_line_number;
+	return _line_number > _max_line_number;
 }
 
 void ParseArguments::AddLine(String&& line)
@@ -42,7 +44,6 @@ void ParseArguments::AddLine(String&& line)
 	}
 
 	_file_lines.push_back(std::move(line));
-	_max_line_number++;
 }
 
 void ParseArguments::GetNextLine()
@@ -51,14 +52,18 @@ void ParseArguments::GetNextLine()
 	{
 		_column_number = 0;
 
-		const String& line = _file_lines[_line_number++];
+		const String& line = _file_lines[++_line_number];
 		_max_column_number = static_cast<unsigned int>(line.size());
+	}
+	else
+	{
+		_line_number++;
 	}
 }
 
 char ParseArguments::GetNextChar()
 {
-	if (_line_number >= _max_line_number)
+	if (_line_number > _max_line_number)
 	{
 		return 0;
 	}
@@ -222,6 +227,7 @@ Boolean LispParser::Lexer()
 			break;
 			}
 		case EToken::SPACE:
+		case EToken::ENDL:
 			{
 			break;
 			}
@@ -263,6 +269,10 @@ EToken LispParser::_CheckToken(const char& value)
 	if (value == ' ')
 	{
 		return EToken::SPACE;
+	}
+	if ((value == '\t') || (value == '\n') || (value == '\t\n'))
+	{
+		return EToken::ENDL;
 	}
 	else if (value != 0)
 	{

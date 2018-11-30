@@ -121,7 +121,7 @@
     <ClCompile Include="..\..\..\src\Tokenizer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\src\Any.h" />
+    <ClInclude Include="..\..\..\src\Atom.h" />
     <ClInclude Include="..\..\..\src\AST.h" />
     <ClInclude Include="..\..\..\src\Common.h" />
     <ClInclude Include="..\..\..\src\Define.h" />
@@ -132,7 +132,7 @@
     <ClInclude Include="..\..\..\src\Tokenizer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\res\test.lsp" />
+    <None Include="..\..\..\res\test.lisp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

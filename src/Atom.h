@@ -6,15 +6,15 @@
 #include "Common.h"
 
 
-class Any
+class Atom
 {
 private:
-	class AnyValueBase
+	class AtomValueBase
 	{
 	public:
-		AnyValueBase() = default;
-		virtual ~AnyValueBase() = default;
-		virtual AnyValueBase* Clone() = 0;
+		AtomValueBase() = default;
+		virtual ~AtomValueBase() = default;
+		virtual AtomValueBase* Clone() = 0;
 		virtual const std::type_info& Type() const = 0;
 		virtual Boolean IsBool() const = 0;
 		virtual Boolean IsNumber() const = 0;
@@ -23,25 +23,25 @@ private:
 	};
 
 	template<typename T>
-	class AnyValue : public AnyValueBase
+	class AtomValue : public AtomValueBase
 	{
 	public:
 		template<typename U>
-		AnyValue(U&& value)
+		AtomValue(U&& value)
 			:_value(std::forward<U>(value))
 		{}
 
 		template<typename U>
-		AnyValue(const U* value)
+		AtomValue(const U* value)
 			:_value(const_cast<U*>(value))
 		{
 		}
 
-		~AnyValue() = default;
+		~AtomValue() = default;
 
-		AnyValueBase* Clone() override
+		AtomValueBase* Clone() override
 		{
-			return new AnyValue<T>(_value);
+			return new AtomValue<T>(_value);
 		}
 
 		T& GetValue()
@@ -79,35 +79,35 @@ private:
 	};
 
 public:
-	template<typename T, typename std::enable_if<!std::is_same<StorageType<T>, Any>::value && !std::is_same<T, AnyValueBase>::value, int>::type = 0>
-	Any(T&& value)
-		:_value_ptr(new AnyValue<StorageType<T>>(std::forward<T>(value)))
+	template<typename T, typename std::enable_if<!std::is_same<StorageType<T>, Atom>::value && !std::is_same<T, AtomValueBase>::value, int>::type = 0>
+	Atom(T&& value)
+		:_value_ptr(new AtomValue<StorageType<T>>(std::forward<T>(value)))
 	{
 	}
 
 	template<typename T>
-	Any(T* value)
-		:Any()
+	Atom(T* value)
+		:Atom()
 	{
 		if (value != nullptr)
 		{
-			_value_ptr = new AnyValue<StorageType<T>*>(value);
+			_value_ptr = new AtomValue<StorageType<T>*>(value);
 		}
 	}
 
-	Any(Any&& other) noexcept
-		:Any()
+	Atom(Atom&& other) noexcept
+		:Atom()
 	{
 		*this = std::move(other);
 	}
 
-	Any(const Any& other)
+	Atom(const Atom& other)
 		:_value_ptr(other.CloneValue())
 	{
 	}
 
-	Any(const Any* other)
-		:Any()
+	Atom(const Atom* other)
+		:Atom()
 	{
 		if (other != nullptr)
 		{
@@ -115,17 +115,17 @@ public:
 		}
 	}
 
-	Any(std::nullptr_t)
-		:Any()
+	Atom(std::nullptr_t)
+		:Atom()
 	{
 	}
 
-	Any()
+	Atom()
 		:_value_ptr(nullptr)
 	{
 	}
 
-	~Any()
+	~Atom()
 	{
 		delete _value_ptr;
 	}
@@ -141,9 +141,9 @@ public:
 		return _value_ptr->Type();
 	}
 
-	static Any& EmptyValue()
+	static Atom& EmptyValue()
 	{
-		static Any empty_value;
+		static Atom empty_value;
 		return empty_value;
 	}
 
@@ -172,7 +172,7 @@ public:
 		return IsNull() ? false : _value_ptr->IsList();
 	}
 
-	AnyValueBase* CloneValue() const
+	AtomValueBase* CloneValue() const
 	{
 		if (IsNull())
 		{
@@ -191,7 +191,7 @@ public:
 	template<typename T>
 	StorageType<T>& As() const
 	{
-		auto* value = dynamic_cast<AnyValue<StorageType<T>>*>(_value_ptr);
+		auto* value = dynamic_cast<AtomValue<StorageType<T>>*>(_value_ptr);
 		if (value == nullptr)
 		{
 			throw ::bad_any_cast(Type().name());
@@ -237,13 +237,13 @@ public:
 
 public:
 	template<typename T>
-	Any& operator=(const T& value)
+	Atom& operator=(const T& value)
 	{
-		*this = Any(value);
+		*this = Atom(value);
 		return *this;
 	}
 
-	Any& operator=(std::nullptr_t)
+	Atom& operator=(std::nullptr_t)
 	{
 		delete _value_ptr;
 
@@ -252,7 +252,7 @@ public:
 		return *this;
 	}
 
-	Any& operator=(Any&& other) noexcept
+	Atom& operator=(Atom&& other) noexcept
 	{
 		if (_value_ptr != other._value_ptr)
 		{
@@ -265,7 +265,7 @@ public:
 		return *this;
 	}
 
-	Any& operator=(const Any& other)
+	Atom& operator=(const Atom& other)
 	{
 		if (_value_ptr != other._value_ptr)
 		{
@@ -277,7 +277,7 @@ public:
 		return *this;
 	}
 
-	bool operator==(const Any& rhs) const
+	bool operator==(const Atom& rhs) const
 	{
 		if (IsNull() && rhs.IsNull())
 		{
@@ -303,17 +303,17 @@ public:
 		throw no_operator("==");
 	}
 
-	bool operator!=(const Any& rhs) const
+	bool operator!=(const Atom& rhs) const
 	{
 		return !(*this == rhs);
 	}
 
-	bool operator>(const Any& rhs) const
+	bool operator>(const Atom& rhs) const
 	{
 		return !(*this < rhs);
 	}
 
-	bool operator<(const Any& rhs) const
+	bool operator<(const Atom& rhs) const
 	{
 		if (IsNumber() && rhs.IsNumber())
 		{
@@ -327,17 +327,17 @@ public:
 		throw no_operator("<");
 	}
 
-	bool operator>=(const Any& rhs) const
+	bool operator>=(const Atom& rhs) const
 	{
 		return (*this == rhs) || (*this > rhs);
 	}
 
-	bool operator<=(const Any& rhs) const
+	bool operator<=(const Atom& rhs) const
 	{
 		return (*this == rhs) || (*this < rhs);
 	}
 
-	//Any operator+(const Any& rhs) const
+	//Atom operator+(const Atom& rhs) const
 	//{
 	//	if (IsNumber() && rhs.IsNumber())
 	//	{
@@ -351,12 +351,12 @@ public:
 	//	{
 	//		List result_list;
 
-	//		for (const Any& item : As<List>())
+	//		for (const Atom& item : As<List>())
 	//		{
 	//			result_list.push_back(item);
 	//		}
 
-	//		for (const Any& item : rhs.As<List>())
+	//		for (const Atom& item : rhs.As<List>())
 	//		{
 	//			result_list.push_back(item);
 	//		}
@@ -367,7 +367,7 @@ public:
 	//	throw no_operator();
 	//}
 
-	//Any operator-(const Any& rhs) const
+	//Atom operator-(const Atom& rhs) const
 	//{
 	//	if (IsNumber() && rhs.IsNumber())
 	//	{
@@ -377,7 +377,7 @@ public:
 	//	throw no_operator();
 	//}
 
-	//Any operator*(const Any& rhs) const
+	//Atom operator*(const Atom& rhs) const
 	//{
 	//	if (IsNumber() && rhs.IsNumber())
 	//	{
@@ -387,7 +387,7 @@ public:
 	//	throw no_operator();
 	//}
 
-	//Any operator/(const Any& rhs) const
+	//Atom operator/(const Atom& rhs) const
 	//{
 	//	if (IsNumber() && rhs.IsNumber())
 	//	{
@@ -398,7 +398,7 @@ public:
 	//}
 
 private:
-	AnyValueBase* _value_ptr;
+	AtomValueBase* _value_ptr;
 };
 
 #endif

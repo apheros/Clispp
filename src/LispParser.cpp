@@ -359,21 +359,21 @@ ASTNode* LispParser::_CreatSymbol()
 	{
 		auto value = token->value == "#t";
 
-		return new ASTConstNode(Any(value));
+		return new ASTConstNode(Atom(value));
 	}
 	else if (token->token == EToken::NUMBER)
 	{
 		auto value = strtod(token->value.c_str(), nullptr);
 
-		return new ASTConstNode(Any(value));
+		return new ASTConstNode(Atom(value));
 	}
 	else if (token->token == EToken::STRING)
 	{
-		return new ASTConstNode(Any(token->value));
+		return new ASTConstNode(Atom(token->value));
 	}
 	else if (token->token == EToken::SYMBOL)
 	{
-		return new ASTSymbolNode(Any(token->value));
+		return new ASTSymbolNode(Atom(token->value));
 	}
 
 	return nullptr;
@@ -399,9 +399,9 @@ void LispParser::ClearNodeVector(ASTNodeVector& node_vector)
 	node_vector.clear();
 }
 
-Any LispParser::Eval(Runtime* runtime)
+Atom LispParser::Eval(Runtime* runtime)
 {
-	Any result = nullptr;
+	Atom result = nullptr;
 
 	for (auto* ast_node : _ast_vector)
 	{

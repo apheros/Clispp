@@ -2,4 +2,6 @@
 	(lambda (x y)
 		(+ x y)))
 
-(add 3 5)
+(add 
+	(add 3 5)
+	7)

@@ -44,9 +44,6 @@
     <ClInclude Include="..\..\..\src\Tokenizer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Any.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\Common.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -59,9 +56,12 @@
     <ClInclude Include="..\..\..\src\Define.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\Atom.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\res\test.lsp">
+    <None Include="..\..\..\res\test.lisp">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>

@@ -48,7 +48,7 @@ public:
 	void ParserContext();
 	Boolean Lexer();
 	Boolean Parser();
-	Any Eval(Runtime* runtime);
+	Atom Eval(Runtime* runtime);
 
 private:
 	static EToken _CheckToken(const char& value);

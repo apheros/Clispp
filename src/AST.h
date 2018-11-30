@@ -1,7 +1,7 @@
 #pragma once
 #ifndef _H_AST_H_
 #define _H_AST_H_
-#include "Any.h"
+#include "Atom.h"
 #include "Common.h"
 #include "Runtime.h"
 
@@ -13,13 +13,14 @@ public:
 	virtual ~ASTNode() = default;
 
 public:
-	virtual Any Eval(Runtime* runtime) = 0;
+	virtual Atom Eval(Runtime* runtime) = 0;
+	virtual EType Type() = 0;
 };
 
 class ASTConstNode final : public ASTNode
 {
 public:
-	ASTConstNode(Any&& value)
+	ASTConstNode(Atom&& value)
 	{
 		_value = std::move(value);
 	}
@@ -27,19 +28,24 @@ public:
 	~ASTConstNode() = default;
 
 public:
-	Any Eval(Runtime* runtime) override
+	Atom Eval(Runtime* runtime) override
 	{
 		return _value;
 	}
 
+	EType Type() override
+	{
+		return TYPE_CONST;
+	}
+
 private:
-	Any _value;
+	Atom _value;
 };
 
 class ASTSymbolNode final : public ASTNode
 {
 public:
-	ASTSymbolNode(Any&& value)
+	ASTSymbolNode(Atom&& value)
 	{
 		_value = std::move(value);
 	}
@@ -47,7 +53,7 @@ public:
 	~ASTSymbolNode() = default;
 
 public:
-	Any Eval(Runtime* runtime) override
+	Atom Eval(Runtime* runtime) override
 	{
 		if (runtime != nullptr)
 		{
@@ -57,8 +63,13 @@ public:
 		return _value;
 	}
 
+	EType Type() override
+	{
+		return TYPE_SYMBOL;
+	}
+
 private:
-	Any _value;
+	Atom _value;
 };
 
 class ASTListNode final : public ASTNode
@@ -91,19 +102,17 @@ public:
 		return _node_arguments;
 	}
 
-	Any Eval(Runtime* runtime) override
+	Atom Eval(Runtime* runtime) override
 	{
 		if (_node_arguments.empty())
 		{
-			return Any::EmptyValue();
+			return Atom::EmptyValue();
 		}
 
-		auto iter = _node_arguments.begin();
-		auto functor_node = *iter;
-
+		auto* functor_node = _node_arguments.front();
 		if (functor_node == nullptr)
 		{
-			return Any::EmptyValue();
+			return Atom::EmptyValue();
 		}
 
 		const auto& functor_any = functor_node->Eval(runtime);
@@ -111,10 +120,15 @@ public:
 
 		if (functor == nullptr)
 		{
-			return Any::EmptyValue();
+			return Atom::EmptyValue();
 		}
 
 		return functor(runtime, _node_arguments);
+	}
+
+	EType Type() override
+	{
+		return TYPE_LIST;
 	}
 
 private:

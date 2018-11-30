@@ -1,17 +1,10 @@
 #include "Runtime.h"
-#include "Any.h"
+#include "Atom.h"
 #include "ScriptFunction.h"
 
 
-AnyAnyMap Runtime::_static_symbol_stack = {
-	{ string("+"), SystemFunction::Addition },
-	{ string("-"), SystemFunction::Subtraction },
-	{ string("-"), SystemFunction::Subtraction },
-	{ string("*"), SystemFunction::Multiplication },
-	{ string("/"), SystemFunction::Division },
-	{ string("define"), SystemFunction::Define },
-	{ string("lambda"), SystemFunction::Lambda },
-};
+using namespace SystemFunction;
+
 
 Runtime::Runtime()
 {
@@ -21,17 +14,17 @@ Runtime::~Runtime()
 {
 }
 
-void Runtime::AddGlobalymbol(Any&& symbol_name, Any&& symbol)
+void Runtime::AddGlobalymbol(Atom&& symbol_name, Atom&& symbol)
 {
 	_global_symbol_stack[std::move(symbol_name)] = std::move(symbol);
 }
 
-void Runtime::AddLocalSymbol(const Any& symbol_name, Any&& symbol)
+void Runtime::AddLocalSymbol(const Atom& symbol_name, Atom&& symbol)
 {
 	_local_symbol_stack[symbol_name] = std::move(symbol);
 }
 
-void Runtime::RemoveSymbol(const Any& symbol_name)
+void Runtime::RemoveSymbol(const Atom& symbol_name)
 {
 	const auto iter = _local_symbol_stack.find(symbol_name);
 	if (iter != _local_symbol_stack.end())
@@ -40,20 +33,27 @@ void Runtime::RemoveSymbol(const Any& symbol_name)
 	}
 }
 
-Any& Runtime::GetSymbol(Any& symbol_name)
+Atom& Runtime::GetSymbol(Atom& symbol_name)
 {
-	auto iter = _local_symbol_stack.find(symbol_name);
+	auto iter = STATIC_SYMBOL_STACK.find(symbol_name);
+	if (iter != STATIC_SYMBOL_STACK.end())
+	{
+		return iter->second;
+	}
+
+	iter = _local_symbol_stack.find(symbol_name);
 	if (iter != _local_symbol_stack.end())
 	{
 		return iter->second;
 	}
 
-	iter = _static_symbol_stack.find(symbol_name);
-	if (iter != _static_symbol_stack.end())
+	iter = _global_symbol_stack.find(symbol_name);
+	if (iter != _global_symbol_stack.end())
 	{
 		return iter->second;
 	}
 
 	/*throw cannot_find_symbol();*/
+
 	return symbol_name;
 }

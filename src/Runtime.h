@@ -9,13 +9,12 @@ public:
 	~Runtime();
 
 public:
-	void AddLocalSymbol(const Any& symbol_name, Any&& symbol);
-	void AddGlobalymbol(Any&& symbol_name, Any&& symbol);
-	void RemoveSymbol(const Any& symbol_name);
-	Any& GetSymbol(Any& symbol_name);
+	void AddLocalSymbol(const Atom& symbol_name, Atom&& symbol);
+	void AddGlobalymbol(Atom&& symbol_name, Atom&& symbol);
+	void RemoveSymbol(const Atom& symbol_name);
+	Atom& GetSymbol(Atom& symbol_name);
 
 private:
-	static AnyAnyMap _static_symbol_stack;
-	AnyAnyMap _global_symbol_stack;
-	AnyAnyMap _local_symbol_stack;
+	AtomAtomMap _global_symbol_stack;
+	AtomAtomMap _local_symbol_stack;
 };

@@ -15,7 +15,7 @@ using namespace std;
 #define Number double
 #define Boolean bool
 #define String string
-#define List AnyList
+#define List AtomList
 
 
 static const String EMPTY_STRING = String();
@@ -26,15 +26,24 @@ typedef vector<String> StringVector;
 class ASTNode;
 typedef vector<ASTNode*> ASTNodeVector;
 
-class Any;
-typedef vector<Any> AnyVector;
-typedef map<Any, Any> AnyAnyMap;
-typedef unordered_map<Any, Any> AnyAnyHashMap;
-typedef list<Any> AnyList;
+class Atom;
+typedef vector<Atom> AtomVector;
+typedef map<Atom, Atom> AtomAtomMap;
+typedef unordered_map<Atom, Atom> AtomAtomHashMap;
+typedef list<Atom> AtomList;
 
 class Token;
 typedef vector<const Token*> TokenVector;
 
 class Runtime;
-typedef function<Any(Runtime*, ASTNodeVector&)> ScriptFunction;
+typedef function<Atom(Runtime*, ASTNodeVector&)> ScriptFunction;
 typedef map<String, ScriptFunction> NameFunctionMap;
+
+
+enum EType
+{
+	TYPE_NONE,
+	TYPE_CONST,
+	TYPE_SYMBOL,
+	TYPE_LIST,
+};

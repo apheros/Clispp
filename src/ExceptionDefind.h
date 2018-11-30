@@ -19,6 +19,14 @@ private:
 	string type_name;
 };
 
+class value_is_null : public exception
+{
+	char const* what() const override
+	{
+		return "value is Null";
+	}
+};
+
 class wrong_type : public exception
 {
 	char const* what() const override

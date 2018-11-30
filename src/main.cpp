@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "LispParser.h"
 #include "Runtime.h"
-#include "Any.h"
+#include "Atom.h"
 
 
 using namespace std;
@@ -10,7 +10,7 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	const String file_name = "E:/Workshop/Cpp/LispParser/res/test.lsp";
+	const String file_name = "E:/Workshop/Cpp/LispParser/res/test.lisp";
 
 	cout << "Start Parsing Lisp file: " << file_name << endl;
 
@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 
 	auto* runtime = new Runtime();
 
-	const Any& result = parser.Eval(runtime);
+	const Atom& result = parser.Eval(runtime);
 
 	cout << "Result: " << result.ToString() << endl;
 

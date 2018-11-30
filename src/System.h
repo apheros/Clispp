@@ -15,6 +15,7 @@ namespace System
 		{ string("cond"), Cond },
 		{ string("else"), Else },
 		{ string("if"), If },
+		{ string("number?"), IsNumber },
 	};
 }
 

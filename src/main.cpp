@@ -25,8 +25,6 @@ int main(int argc, char* argv[])
 		const Atom& result = parser.Eval(runtime);
 
 		cout << "Result: " << result.ToString() << endl;
-
-		throw wrong_type();
 	}
 	catch (exception& exception)
 	{

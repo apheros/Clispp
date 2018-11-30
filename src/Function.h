@@ -181,6 +181,56 @@ namespace System
 
 		return node_expression->Eval(runtime);
 	};
+
+	static ScriptFunction IsNumber = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		if (node_arguments.size() < 2)
+		{
+			throw wrong_argument_size();
+		}
+
+		ASTNode* node = node_arguments[1];
+		if (node == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		auto&& result = node->Eval(runtime);
+
+		return result.IsNumber();
+	};
+
+	static ScriptFunction IsList = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		if (node_arguments.size() < 2)
+		{
+			throw wrong_argument_size();
+		}
+
+		ASTNode* node = node_arguments[1];
+		if (node == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		return node->Type() == TYPE_LIST;
+	};
+
+	static ScriptFunction IsSymbol = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		if (node_arguments.size() < 2)
+		{
+			throw wrong_argument_size();
+		}
+
+		ASTNode* node = node_arguments[1];
+		if (node == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		return node->Type() == TYPE_SYMBOL;
+	};
 }
 
 #endif

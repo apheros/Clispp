@@ -1,9 +1,9 @@
 #include "Runtime.h"
 #include "Atom.h"
-#include "ScriptFunction.h"
+#include "System.h"
 
 
-using namespace SystemFunction;
+using namespace System;
 
 
 Runtime::Runtime()
@@ -36,7 +36,7 @@ void Runtime::RemoveSymbol(const Atom& symbol_name)
 Atom& Runtime::GetSymbol(Atom& symbol_name)
 {
 	auto iter = STATIC_SYMBOL_STACK.find(symbol_name);
-	if (iter != STATIC_SYMBOL_STACK.end())
+	if (iter != System::STATIC_SYMBOL_STACK.end())
 	{
 		return iter->second;
 	}

@@ -13,8 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="头文件\Function">
+    <Filter Include="头文件\System">
       <UniqueIdentifier>{0b1fa7c8-de68-4203-9415-6047b287b1c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Define">
+      <UniqueIdentifier>{8e3472bc-3b39-49c3-a67a-1123aaa0be1c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -44,20 +47,26 @@
     <ClInclude Include="..\..\..\src\Tokenizer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Common.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\ScriptFunction.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\ExceptionDefind.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Define.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\Atom.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Math.h">
+      <Filter>头文件\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\System.h">
+      <Filter>头文件\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\TypeDefine.h">
+      <Filter>头文件\Define</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\FunctionDefine.h">
+      <Filter>头文件\Define</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\ExceptionDefind.h">
+      <Filter>头文件\Define</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Function.h">
+      <Filter>头文件\System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

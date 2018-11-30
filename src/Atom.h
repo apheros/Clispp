@@ -2,8 +2,8 @@
 #ifndef _H_ANY_H_
 #define _H_ANY_H_
 #include "ExceptionDefind.h"
-#include "Define.h"
-#include "Common.h"
+#include "FunctionDefine.h"
+#include "TypeDefine.h"
 
 
 class Atom

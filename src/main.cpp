@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Common.h"
+#include "TypeDefine.h"
 #include "LispParser.h"
 #include "Runtime.h"
 #include "Atom.h"
@@ -14,15 +14,24 @@ int main(int argc, char* argv[])
 
 	cout << "Start Parsing Lisp file: " << file_name << endl;
 
-	LispParser parser;
+	try
+	{
+		LispParser parser;
 
-	parser.ParserFromFile(file_name);
+		parser.ParserFromFile(file_name);
 
-	auto* runtime = new Runtime();
+		auto* runtime = new Runtime();
 
-	const Atom& result = parser.Eval(runtime);
+		const Atom& result = parser.Eval(runtime);
 
-	cout << "Result: " << result.ToString() << endl;
+		cout << "Result: " << result.ToString() << endl;
+
+		throw wrong_type();
+	}
+	catch (exception& exception)
+	{
+		cout << "Error: " << exception.what() << endl;
+	}
 
 	return 0;
 }

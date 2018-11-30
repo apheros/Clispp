@@ -1,7 +1,7 @@
 #pragma once
 #ifndef _H_LISPPARSER_H_
 #define _H_LISPPARSER_H_
-#include "Common.h"
+#include "TypeDefine.h"
 #include "Tokenizer.h"
 
 

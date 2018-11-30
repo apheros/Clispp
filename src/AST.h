@@ -2,7 +2,7 @@
 #ifndef _H_AST_H_
 #define _H_AST_H_
 #include "Atom.h"
-#include "Common.h"
+#include "TypeDefine.h"
 #include "Runtime.h"
 
 

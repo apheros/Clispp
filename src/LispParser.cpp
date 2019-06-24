@@ -20,7 +20,7 @@ ParseArguments::~ParseArguments()
 
 void ParseArguments::OnBeforeLexer()
 {
-	_max_line_number = _file_lines.size() - 1;
+	_max_line_number = (unsigned int)_file_lines.size() - 1;
 
 	const String& line = _file_lines[_line_number];
 	_max_column_number = static_cast<unsigned int>(line.size());

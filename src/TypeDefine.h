@@ -36,8 +36,8 @@ class Token;
 typedef vector<const Token*> TokenVector;
 
 class Runtime;
-typedef function<Atom(Runtime*, ASTNodeVector&)> ScriptFunction;
-typedef map<String, ScriptFunction> NameFunctionMap;
+typedef function<Atom(Runtime*, ASTNodeVector&)> SystemFunction;
+typedef map<String, SystemFunction> NameFunctionMap;
 
 
 enum EType

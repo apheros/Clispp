@@ -141,10 +141,10 @@ public:
 		return _value_ptr->Type();
 	}
 
-	static Atom& EmptyValue()
+	static const Atom& NONE()
 	{
-		static Atom empty_value;
-		return empty_value;
+		static Atom none;
+		return none;
 	}
 
 	Boolean IsNull() const

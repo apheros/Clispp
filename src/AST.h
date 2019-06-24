@@ -17,6 +17,31 @@ public:
 	virtual EType Type() = 0;
 };
 
+class ASTNullNode final : public ASTNode
+{
+public:
+	ASTNullNode(Atom&& value)
+	{
+		_value = std::move(value);
+	}
+
+	~ASTNullNode() = default;
+
+public:
+	Atom Eval(Runtime* runtime) override
+	{
+		return _value;
+	}
+
+	EType Type() override
+	{
+		return TYPE_NONE;
+	}
+
+private:
+	Atom _value;
+};
+
 class ASTConstNode final : public ASTNode
 {
 public:
@@ -106,21 +131,21 @@ public:
 	{
 		if (_node_arguments.empty())
 		{
-			return Atom::EmptyValue();
+			return Atom::NONE();
 		}
 
 		auto* functor_node = _node_arguments.front();
 		if (functor_node == nullptr)
 		{
-			return Atom::EmptyValue();
+			return Atom::NONE();
 		}
 
 		const auto& functor_any = functor_node->Eval(runtime);
-		const auto& functor = functor_any.As<ScriptFunction>();
+		const auto& functor = functor_any.As<SystemFunction>();
 
 		if (functor == nullptr)
 		{
-			return Atom::EmptyValue();
+			return Atom::NONE();
 		}
 
 		return functor(runtime, _node_arguments);

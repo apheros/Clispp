@@ -9,7 +9,7 @@
 
 namespace System
 {
-	static ScriptFunction Define = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
+	static SystemFunction Define = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
 	{
 		AtomVector arguments;
 		EvalASTVevtor(runtime, node_arguments, arguments);
@@ -21,17 +21,17 @@ namespace System
 
 		runtime->AddGlobalymbol(std::move(arguments[0]), std::move(arguments[1]));
 
-		return Atom::EmptyValue();
+		return Atom::NONE();
 	};
 
-	static ScriptFunction Lambda = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
+	static SystemFunction Lambda = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
 	{
 		if (node_arguments.size() != 3)
 		{
 			throw wrong_argument_size();
 		}
 
-		return static_cast<ScriptFunction>([lambda_node_list = node_arguments](Runtime* runtime, ASTNodeVector& symbol_value_node_list) -> Atom
+		return static_cast<SystemFunction>([lambda_node_list = node_arguments](Runtime* runtime, ASTNodeVector& symbol_value_node_list) -> Atom
 		{
 			auto* symbol_name_list_node = dynamic_cast<ASTListNode*>(lambda_node_list[1]);
 			if (symbol_name_list_node == nullptr)
@@ -76,7 +76,7 @@ namespace System
 		});
 	};
 
-	static ScriptFunction Cond = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
+	static SystemFunction Cond = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
 	{
 		if (node_arguments.size() < 3)
 		{
@@ -133,7 +133,7 @@ namespace System
 		return node_else->Eval(runtime);
 	};
 
-	static ScriptFunction Else = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	static SystemFunction Else = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
 	{
 		if (node_arguments.size() != 2)
 		{
@@ -149,7 +149,7 @@ namespace System
 		return node_expression->Eval(runtime);
 	};
 
-	static ScriptFunction If = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	static SystemFunction If = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
 	{
 		if (node_arguments.size() != 4)
 		{
@@ -182,7 +182,71 @@ namespace System
 		return node_expression->Eval(runtime);
 	};
 
-	static ScriptFunction IsNumber = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	static SystemFunction IsNull = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		if (node_arguments.size() < 2)
+		{
+			throw wrong_argument_size();
+		}
+
+		ASTNode* node = node_arguments[1];
+		if (node == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		return node->Type() == TYPE_NONE;
+	};
+
+	static SystemFunction IsList = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		if (node_arguments.size() < 2)
+		{
+			throw wrong_argument_size();
+		}
+
+		ASTNode* node = node_arguments[1];
+		if (node == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		return node->Type() == TYPE_LIST;
+	};
+
+	static SystemFunction IsAtom = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		if (node_arguments.size() < 2)
+		{
+			throw wrong_argument_size();
+		}
+
+		ASTNode* node = node_arguments[1];
+		if (node == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		return node->Type() == TYPE_CONST || node->Type() == TYPE_SYMBOL;
+	};
+
+	static SystemFunction IsSymbol = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		if (node_arguments.size() < 2)
+		{
+			throw wrong_argument_size();
+		}
+
+		ASTNode* node = node_arguments[1];
+		if (node == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		return node->Type() == TYPE_SYMBOL;
+	};
+
+	static SystemFunction IsNumber = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
 	{
 		if (node_arguments.size() < 2)
 		{
@@ -200,7 +264,7 @@ namespace System
 		return result.IsNumber();
 	};
 
-	static ScriptFunction IsList = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	static SystemFunction IsBoolen = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
 	{
 		if (node_arguments.size() < 2)
 		{
@@ -213,10 +277,12 @@ namespace System
 			throw value_is_null();
 		}
 
-		return node->Type() == TYPE_LIST;
+		auto&& result = node->Eval(runtime);
+
+		return result.IsBool();
 	};
 
-	static ScriptFunction IsSymbol = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	static SystemFunction IsString = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
 	{
 		if (node_arguments.size() < 2)
 		{
@@ -229,7 +295,9 @@ namespace System
 			throw value_is_null();
 		}
 
-		return node->Type() == TYPE_SYMBOL;
+		auto&& result = node->Eval(runtime);
+
+		return result.IsString();
 	};
 }
 

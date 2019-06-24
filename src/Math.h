@@ -26,7 +26,7 @@ namespace System
 		}
 	}
 
-	static ScriptFunction Addition = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
+	static SystemFunction Addition = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
 	{
 		AtomVector arguments;
 		EvalASTVevtor(runtime, node_arguments, arguments);
@@ -40,7 +40,7 @@ namespace System
 		return result;
 	};
 
-	static ScriptFunction Subtraction = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
+	static SystemFunction Subtraction = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
 	{
 		AtomVector arguments;
 		EvalASTVevtor(runtime, node_arguments, arguments);
@@ -60,7 +60,7 @@ namespace System
 		return result;
 	};
 
-	static ScriptFunction Multiplication = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
+	static SystemFunction Multiplication = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
 	{
 		AtomVector arguments;
 		EvalASTVevtor(runtime, node_arguments, arguments);
@@ -74,7 +74,7 @@ namespace System
 		return result;
 	};
 
-	static ScriptFunction Division = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
+	static SystemFunction Division = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
 	{
 		AtomVector arguments;
 		EvalASTVevtor(runtime, node_arguments, arguments);

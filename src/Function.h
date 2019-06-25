@@ -60,6 +60,8 @@ namespace System
 				throw wrong_argument_size();
 			}
 
+			runtime->EnterScope();
+
 			for (size_t i = 0; i < symbol_name_list.size(); i++)
 			{
 				runtime->AddLocalSymbol(symbol_name_list[i], std::move(symbol_value_list[i]));
@@ -72,7 +74,9 @@ namespace System
 				runtime->RemoveSymbol(symbol_name);
 			}
 
-			return result;
+			runtime->LeaveScope();
+
+			return std::move(result);
 		});
 	};
 

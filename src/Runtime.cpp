@@ -1,6 +1,7 @@
 #include "Runtime.h"
 #include "Atom.h"
 #include "System.h"
+#include "SymbolTree.h"
 
 
 using namespace System;
@@ -14,26 +15,22 @@ Runtime::~Runtime()
 {
 }
 
-void Runtime::AddGlobalymbol(Atom&& symbol_name, Atom&& symbol)
+void Runtime::AddGlobalymbol(Atom&& symbol_name, Atom&& symbol) const
 {
-	_global_symbol_stack[std::move(symbol_name)] = std::move(symbol);
+	_symbol_tree.AddGlobalValue(symbol_name, symbol);
 }
 
-void Runtime::AddLocalSymbol(const Atom& symbol_name, Atom&& symbol)
+void Runtime::AddLocalSymbol(const Atom& symbol_name, Atom&& symbol) const
 {
-	_local_symbol_stack[symbol_name] = std::move(symbol);
+	_symbol_tree.AddValue(symbol_name, symbol);
 }
 
-void Runtime::RemoveSymbol(const Atom& symbol_name)
+void Runtime::RemoveSymbol(const Atom& symbol_name) const
 {
-	const auto iter = _local_symbol_stack.find(symbol_name);
-	if (iter != _local_symbol_stack.end())
-	{
-		_local_symbol_stack.erase(iter);
-	}
+	_symbol_tree.RemoveValue(symbol_name);
 }
 
-Atom& Runtime::GetSymbol(Atom& symbol_name)
+Atom& Runtime::GetSymbol(Atom& symbol_name) const
 {
 	auto iter = STATIC_SYMBOL_STACK.find(symbol_name);
 	if (iter != System::STATIC_SYMBOL_STACK.end())
@@ -41,19 +38,15 @@ Atom& Runtime::GetSymbol(Atom& symbol_name)
 		return iter->second;
 	}
 
-	iter = _local_symbol_stack.find(symbol_name);
-	if (iter != _local_symbol_stack.end())
-	{
-		return iter->second;
-	}
+	return _symbol_tree.GetValue(symbol_name);
+}
 
-	iter = _global_symbol_stack.find(symbol_name);
-	if (iter != _global_symbol_stack.end())
-	{
-		return iter->second;
-	}
+void Runtime::EnterScope()
+{
+	_symbol_tree.EnterScope();
+}
 
-	/*throw cannot_find_symbol();*/
-
-	return symbol_name;
+void Runtime::LeaveScope()
+{
+	_symbol_tree.LeaveScope();
 }

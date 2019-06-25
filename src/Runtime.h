@@ -1,5 +1,5 @@
 #pragma once
-#include "TypeDefine.h"
+#include "SymbolTree.h"
 
 
 class Runtime
@@ -9,12 +9,13 @@ public:
 	~Runtime();
 
 public:
-	void AddLocalSymbol(const Atom& symbol_name, Atom&& symbol);
-	void AddGlobalymbol(Atom&& symbol_name, Atom&& symbol);
-	void RemoveSymbol(const Atom& symbol_name);
-	Atom& GetSymbol(Atom& symbol_name);
+	void AddLocalSymbol(const Atom& symbol_name, Atom&& symbol) const;
+	void AddGlobalymbol(Atom&& symbol_name, Atom&& symbol) const;
+	void RemoveSymbol(const Atom& symbol_name) const;
+	Atom& GetSymbol(Atom& symbol_name) const;
+	void EnterScope();
+	void LeaveScope();
 
 private:
-	AtomAtomMap _global_symbol_stack;
-	AtomAtomMap _local_symbol_stack;
+	SymbolTree _symbol_tree;
 };

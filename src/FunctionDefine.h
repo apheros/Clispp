@@ -1,5 +1,6 @@
 #pragma once
 #include <type_traits>
+#include "TypeDefine.h"
 
 
 template<typename T>

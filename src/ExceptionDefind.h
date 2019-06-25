@@ -1,11 +1,12 @@
 #pragma once
 #include <typeinfo>
+#include <string>
 
 
 class bad_any_cast : public std::bad_cast
 {
 public:
-	bad_any_cast(string type_name)
+	bad_any_cast(std::string type_name)
 		:type_name(std::move(type_name))
 	{
 	}
@@ -16,10 +17,10 @@ public:
 	}
 
 private:
-	string type_name;
+	std::string type_name;
 };
 
-class value_is_null : public exception
+class value_is_null : public std::exception
 {
 	char const* what() const override
 	{
@@ -27,7 +28,7 @@ class value_is_null : public exception
 	}
 };
 
-class wrong_type : public exception
+class wrong_type : public std::exception
 {
 	char const* what() const override
 	{
@@ -35,7 +36,7 @@ class wrong_type : public exception
 	}
 };
 
-class wrong_syntax : public exception
+class wrong_syntax : public std::exception
 {
 public:
 	wrong_syntax(int line_number, int column_number)
@@ -46,7 +47,7 @@ public:
 
 	char const* what() const override
 	{
-		return ("wrong_syntax: syntax isnot correct in line: " + to_string(line_number) + " column: " + to_string(column_number)).c_str();
+		return ("wrong_syntax: syntax isnot correct in line: " + std::to_string(line_number) + " column: " + std::to_string(column_number)).c_str();
 	}
 
 private:
@@ -54,10 +55,10 @@ private:
 	int column_number;
 };
 
-class no_operator : public exception
+class no_operator : public std::exception
 {
 public:
-	no_operator(string operator_name)
+	no_operator(std::string operator_name)
 		:operator_name(std::move(operator_name))
 	{
 	}
@@ -68,10 +69,10 @@ public:
 	}
 
 private:
-	string operator_name;
+	std::string operator_name;
 };
 
-class cannot_find_symbol : public exception
+class cannot_find_symbol : public std::exception
 {
 	char const* what() const override
 	{
@@ -79,7 +80,7 @@ class cannot_find_symbol : public exception
 	}
 };
 
-class wrong_argument_size : public exception
+class wrong_argument_size : public std::exception
 {
 	char const* what() const override
 	{

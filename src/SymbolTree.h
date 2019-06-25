@@ -80,11 +80,11 @@ public:
 		,_is_enter_scope(false)
 	{
 		_root = new SymbolTreeNode;
+		_current = _root;
 	}
 
 	~SymbolTree()
 	{
-
 	}
 
 public:
@@ -92,33 +92,33 @@ public:
 	{
 		if (_is_enter_scope)
 		{
-			if (_root->_children.empty())
+			if (_current->_children.empty())
 			{
-				auto* child = _root->CreateChild();
-				_root = child;
+				auto* child = _current->CreateChild();
+				_current = child;
 			}
 			else
 			{
-				auto* child = _root->_children.front();
+				auto* child = _current->_children.front();
 				if (child == nullptr)
 				{
-					child = _root->CreateChild();
-					_root->_children[0] = child;
+					child = _current->CreateChild();
+					_current->_children[0] = child;
 				}
 
-				_root = child;
+				_current = child;
 			}
 		}
 		else
 		{
-			if (_root->_right == nullptr)
+			if (_current->_right == nullptr)
 			{
-				_root->_right = new SymbolTreeNode;
-				_root->_right->_parent = _root->_parent;
-				_root->_right->_left = _root;
+				_current->_right = new SymbolTreeNode;
+				_current->_right->_parent = _current->_parent;
+				_current->_right->_left = _current;
 			}
 
-			_root = _root->_right;
+			_current = _current->_right;
 		}
 
 		_is_enter_scope = true;
@@ -126,9 +126,9 @@ public:
 
 	void LeaveScope()
 	{
-		if (_root == nullptr)
+		if (_current == nullptr || _current->_parent == nullptr)
 		{
-			return;
+			throw value_is_null();
 		}
 
 		if (_is_enter_scope)
@@ -136,12 +136,22 @@ public:
 			return;
 		}
 
-		_root = _root->_parent;
+		_current = _current->_parent;
 
 		_is_enter_scope = false;
 	}
 
 	void AddValue(const Atom& name, Atom& value) const
+	{
+		if (_current == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		_current->AddValue(name, value);
+	}
+
+	void AddGlobalValue(const Atom& name, Atom& value) const
 	{
 		if (_root == nullptr)
 		{
@@ -151,23 +161,23 @@ public:
 		_root->AddValue(name, value);
 	}
 
-	Atom GetValue(const Atom& name) const
+	Atom& GetValue(const Atom& name) const
 	{
-		return _GetValue(_root, name);
+		return _GetValue(_current, name);
 	}
 
 	void RemoveValue(const Atom& name) const
 	{
-		if (_root == nullptr)
+		if (_current == nullptr)
 		{
 			throw value_is_null();
 		}
 
-		_root->RemoveValue(name);
+		_current->RemoveValue(name);
 	}
 
 private:
-	Atom _GetValue(SymbolTreeNode* root, const Atom& name) const
+	Atom& _GetValue(SymbolTreeNode* root, const Atom& name) const
 	{
 		if (root == nullptr)
 		{
@@ -177,7 +187,7 @@ private:
 		auto& result = root->GetValue(name);
 		if (result.IsNull() && root->_parent != nullptr)
 		{
-			_GetValue(_root->_parent, name);
+			return _GetValue(_current->_parent, name);
 		}
 
 		return result;
@@ -185,5 +195,6 @@ private:
 
 private:
 	SymbolTreeNode* _root;
+	SymbolTreeNode* _current;
 	bool _is_enter_scope;
 };

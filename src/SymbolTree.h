@@ -6,16 +6,14 @@
 class SymbolTree;
 class SymbolTreeNode
 {
-	friend SymbolTree;
-
-private:
+public:
 	SymbolTreeNode()
 		:_parent(nullptr)
+		,_child(nullptr)
 		,_left(nullptr)
 		,_right(nullptr)
 	{
 		_symbol_value_map.clear();
-		_children.clear();
 	}
 
 	~SymbolTreeNode()
@@ -24,10 +22,19 @@ private:
 		_left = nullptr;
 		_right = nullptr;
 		_symbol_value_map.clear();
-		_children.clear();
+
+		auto* temp_child = _child;
+		while (temp_child != nullptr)
+		{
+			_child = _child->_right;
+
+			delete temp_child;
+
+			temp_child = _child;
+		}
 	}
 
-private:
+public:
 	Atom& GetValue(const Atom& name)
 	{
 		const auto iter = _symbol_value_map.find(name);
@@ -58,18 +65,68 @@ private:
 	SymbolTreeNode* CreateChild()
 	{
 		auto* child = new SymbolTreeNode;
+
 		child->_parent = this;
-		_children.push_back(child);
+
+		if (_child == nullptr)
+		{
+			_child = child;
+			return child;
+		}
+
+		auto* temp_child = _child;
+		while (temp_child->_right != nullptr)
+		{
+			temp_child = temp_child->_right;
+		}
+
+		temp_child->_right = child;
+		child->_left = temp_child;
 
 		return child;
 	}
 
+	void DeleteChild()
+	{
+		if (_child == nullptr)
+		{
+			return;
+		}
+
+		auto* temp_child = _child;
+
+		_child = _child->_right;
+
+		delete temp_child;
+	}
+
+	SymbolTreeNode* GetParent()
+	{
+		return _parent;
+	}
+
+	SymbolTreeNode* GetChild()
+	{
+		return _child;
+	}
+
+	SymbolTreeNode* GetLeft()
+	{
+		return _left;
+	}
+
+	SymbolTreeNode* GetRight()
+	{
+		return _right;
+	}
+
 private:
-	AtomAtomMap _symbol_value_map;
-	std::vector<SymbolTreeNode*> _children;
+	SymbolTreeNode* _child;
 	SymbolTreeNode* _parent;
 	SymbolTreeNode* _left;
 	SymbolTreeNode* _right;
+
+	AtomAtomMap _symbol_value_map;
 };
 
 class SymbolTree
@@ -77,7 +134,6 @@ class SymbolTree
 public:
 	SymbolTree()
 		:_root(nullptr)
-		,_is_enter_scope(false)
 	{
 		_root = new SymbolTreeNode;
 		_current = _root;
@@ -90,65 +146,30 @@ public:
 public:
 	void EnterScope()
 	{
-		if (_is_enter_scope)
-		{
-			if (_current->_children.empty())
-			{
-				auto* child = _current->CreateChild();
-				_current = child;
-			}
-			else
-			{
-				auto* child = _current->_children.front();
-				if (child == nullptr)
-				{
-					child = _current->CreateChild();
-					_current->_children[0] = child;
-				}
-
-				_current = child;
-			}
-		}
-		else
-		{
-			if (_current->_right == nullptr)
-			{
-				_current->_right = new SymbolTreeNode;
-				_current->_right->_parent = _current->_parent;
-				_current->_right->_left = _current;
-			}
-
-			_current = _current->_right;
-		}
-
-		_is_enter_scope = true;
-	}
-
-	void LeaveScope()
-	{
-		if (_current == nullptr || _current->_parent == nullptr)
-		{
-			throw value_is_null();
-		}
-
-		if (_is_enter_scope)
-		{
-			return;
-		}
-
-		_current = _current->_parent;
-
-		_is_enter_scope = false;
-	}
-
-	void AddValue(const Atom& name, Atom& value) const
-	{
 		if (_current == nullptr)
 		{
 			throw value_is_null();
 		}
 
-		_current->AddValue(name, value);
+		auto* child = _current->GetChild();
+		if (child == nullptr)
+		{
+			child = _current->CreateChild();
+		}
+
+		_current = child;
+	}
+
+	void LeaveScope()
+	{
+		if (_current == nullptr || _current->GetParent() == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		_current = _current->GetParent();
+
+		_current->DeleteChild();
 	}
 
 	void AddGlobalValue(const Atom& name, Atom& value) const
@@ -159,6 +180,16 @@ public:
 		}
 
 		_root->AddValue(name, value);
+	}
+
+	void AddValue(const Atom& name, Atom& value) const
+	{
+		if (_current == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		_current->AddValue(name, value);
 	}
 
 	Atom& GetValue(const Atom& name) const
@@ -185,9 +216,9 @@ private:
 		}
 
 		auto& result = root->GetValue(name);
-		if (result.IsNull() && root->_parent != nullptr)
+		if (result.IsNull() && root->GetParent() != nullptr)
 		{
-			return _GetValue(_current->_parent, name);
+			return _GetValue(_current->GetParent(), name);
 		}
 
 		return result;
@@ -196,5 +227,4 @@ private:
 private:
 	SymbolTreeNode* _root;
 	SymbolTreeNode* _current;
-	bool _is_enter_scope;
 };

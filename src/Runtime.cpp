@@ -15,7 +15,7 @@ Runtime::~Runtime()
 {
 }
 
-void Runtime::AddGlobalymbol(Atom&& symbol_name, Atom&& symbol) const
+void Runtime::AddGlobalSymbol(Atom&& symbol_name, Atom&& symbol) const
 {
 	_symbol_tree.AddGlobalValue(symbol_name, symbol);
 }

@@ -12,18 +12,65 @@ namespace System
 	static SystemFunction Define = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
 	{
 		AtomVector arguments;
-		EvalASTVevtor(runtime, node_arguments, arguments);
+		EvalASTVector(runtime, node_arguments, arguments);
 
 		if (arguments.size() < 2)
 		{
 			throw wrong_argument_size();
 		}
 
-		runtime->AddGlobalymbol(std::move(arguments[0]), std::move(arguments[1]));
+		runtime->AddGlobalSymbol(std::move(arguments[0]), std::move(arguments[1]));
 
 		return Atom::NONE();
 	};
 
+	static SystemFunction Let = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
+	{
+		if (node_arguments.size() < 2)
+		{
+			throw wrong_argument_size();
+		}
+
+		auto iter = node_arguments.begin();
+
+		auto* all_pair_list_node = dynamic_cast<ASTListNode*>(*(++iter));
+		if (all_pair_list_node == nullptr)
+		{
+			throw wrong_type();
+		}
+
+		runtime->EnterScope();
+
+		auto& all_pair_list = all_pair_list_node->GetArguments();
+		for (auto* pair_node : all_pair_list)
+		{
+			if (pair_node == nullptr)
+			{
+				continue;
+			}
+
+			auto* pair_list_node = dynamic_cast<ASTListNode*>(pair_node);
+			if (pair_list_node == nullptr)
+			{
+				throw wrong_type();
+			}
+
+			auto& pair_list = pair_list_node->GetArguments();
+			if (pair_list.size() != 2)
+			{
+				throw wrong_argument_size();
+			}
+
+			runtime->AddLocalSymbol(pair_list[0]->Eval(runtime), pair_list[1]->Eval(runtime));
+		}
+
+		AtomVector arguments;
+		EvalASTVector(runtime, ++iter, node_arguments.end(), arguments);
+
+		runtime->LeaveScope();
+
+		return arguments.back();
+	};
 	static SystemFunction Lambda = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
 	{
 		if (node_arguments.size() != 3)
@@ -32,52 +79,47 @@ namespace System
 		}
 
 		return static_cast<SystemFunction>([lambda_node_list = node_arguments](Runtime* runtime, ASTNodeVector& symbol_value_node_list) -> Atom
-		{
-			auto* symbol_name_list_node = dynamic_cast<ASTListNode*>(lambda_node_list[1]);
-			if (symbol_name_list_node == nullptr)
 			{
-				throw wrong_type();
-			}
-
-			AtomVector symbol_name_list;
-
-			auto& symbol_name_node_list = symbol_name_list_node->GetArguments();
-			for (auto* symbol_name_node : symbol_name_node_list)
-			{
-				if (symbol_name_node == nullptr)
+				auto* symbol_name_list_node = dynamic_cast<ASTListNode*>(lambda_node_list[1]);
+				if (symbol_name_list_node == nullptr)
 				{
-					continue;
+					throw wrong_type();
 				}
 
-				symbol_name_list.push_back(symbol_name_node->Eval(runtime));
-			}
+				AtomVector symbol_name_list;
 
-			AtomVector symbol_value_list;
-			EvalASTVevtor(runtime, symbol_value_node_list, symbol_value_list);
+				auto& symbol_name_node_list = symbol_name_list_node->GetArguments();
+				for (auto* symbol_name_node : symbol_name_node_list)
+				{
+					if (symbol_name_node == nullptr)
+					{
+						continue;
+					}
 
-			if (symbol_value_list.size() != symbol_name_list.size())
-			{
-				throw wrong_argument_size();
-			}
+					symbol_name_list.push_back(symbol_name_node->Eval(runtime));
+				}
 
-			runtime->EnterScope();
+				AtomVector symbol_value_list;
+				EvalASTVector(runtime, symbol_value_node_list, symbol_value_list);
 
-			for (size_t i = 0; i < symbol_name_list.size(); i++)
-			{
-				runtime->AddLocalSymbol(symbol_name_list[i], std::move(symbol_value_list[i]));
-			}
+				if (symbol_value_list.size() != symbol_name_list.size())
+				{
+					throw wrong_argument_size();
+				}
 
-			auto&& result = lambda_node_list[2]->Eval(runtime);
+				runtime->EnterScope();
 
-			for (const auto& symbol_name : symbol_name_list)
-			{
-				runtime->RemoveSymbol(symbol_name);
-			}
+				for (size_t i = 0; i < symbol_name_list.size(); i++)
+				{
+					runtime->AddLocalSymbol(symbol_name_list[i], std::move(symbol_value_list[i]));
+				}
 
-			runtime->LeaveScope();
+				auto&& result = lambda_node_list[2]->Eval(runtime);
 
-			return std::move(result);
-		});
+				runtime->LeaveScope();
+
+				return std::move(result);
+			});
 	};
 
 	static SystemFunction Cond = [](Runtime* runtime, ASTNodeVector& node_arguments) -> Atom
@@ -302,6 +344,72 @@ namespace System
 		auto&& result = node->Eval(runtime);
 
 		return result.IsString();
+	};
+
+	static SystemFunction Quote = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		AtomList list;
+
+		for (ASTNode* node : node_arguments)
+		{
+			if (node == nullptr)
+			{
+				continue;
+			}
+
+			list.push_back(node->Eval(runtime));
+		}
+
+		return list;
+	};
+
+	static SystemFunction Car = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		if (node_arguments.size() != 1)
+		{
+			throw  wrong_argument_size();
+		}
+
+		auto* node = node_arguments[0];
+		if (node == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		auto&& result = node->Eval(runtime);
+		if (!result.IsList())
+		{
+			throw  wrong_type();
+		}
+
+		auto& list = result.As<AtomList>();
+
+		return list.front();
+	};
+
+	static SystemFunction Cdr = [](Runtime* runtime, ASTNodeVector& node_arguments)->Atom
+	{
+		if (node_arguments.size() != 1)
+		{
+			throw  wrong_argument_size();
+		}
+
+		auto* node = node_arguments[0];
+		if (node == nullptr)
+		{
+			throw value_is_null();
+		}
+
+		auto&& result = node->Eval(runtime);
+		if (!result.IsList())
+		{
+			throw  wrong_type();
+		}
+
+		auto& list = result.As<AtomList>();
+		list.erase(list.begin());
+
+		return list;
 	};
 }
 
